@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.4.3 Beta
+	Date: 25th Dec 2013
+  
+  X Rebirth version: 1.21
+-->
+<diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <add sel="/language[@id='44']">
+    <page id="99998" title="UFO" descr="Text for UFO mod." voice="no">
+      <!-- 1-99: Radial menu item and UI menu titles labels -->
+      <t id="1">Fleet Management</t>
+      <t id="2">Fleets n/a while docked(used to indicate fleet management cannot be done while docked yet)</t>
+      <t id="3">No fleets detected(notification text for fleet report if no fleets exist)</t>
+
+      <t id="10">Choose Stance</t>
+      <t id="11">Choose Stance for</t>
+      <t id="12">Aggression Level</t>
+      <t id="13">Formation Mode</t>
+
+      <t id="20">Choose Command for Fleet</t>
+      <t id="21">Choose Ship to Escort</t>
+      <t id="22">Choose Target Zone</t>
+      <t id="23">Choose Commander for Fleet"</t>
+      <t id="24">Create New Fleet</t>
+      <t id="25">Add Ships to Fleet</t>
+      
+      <t id="30">Needs Defence Officer(label used for capital ships that don't have defence officers)</t>
+      <t id="31">no %1(label used to indicate that a certain NPC type is needed)</t>
+      <t id="32">Fleet Commands(menu item label for fleet commands section)</t>
+      <t id="33">Attack Zone(menu item label for fleet command to attack a zone)</t>
+      
+      <!-- 100 - 199: Button labels -->
+      <t id="100">Broadcast Stance</t>
+      <t id="101">Escort Ship</t>
+      <t id="102">Move to Zone</t>
+      <t id="103">Command</t>
+      <t id="104">Create Fleet</t>
+
+      <!-- 200 - 299: Event monitor labels -->
+      <t id="5">Order Acknowledged</t>
+      <t id="18">Acknowledged: %1</t>
+      <t id="25">Real-time Fleet Status Report(notification caption for fleet status reports)</t>
+      <t id="26">commanding %1 ship\(s\)(text for fleet status reports)</t>
+      <t id="27">%1 capital ship\(s\)(text for fleet status reports)</t>
+      <t id="28">%1 fighter\(s\)(text for fleet status reports)</t>
+      <t id="29">detected %1 enemy ship\(s\)(text for fleet status reports)</t>
+      <t id="30">in zone %1(text for fleet status reports)</t>
+      <t id="31">Engaging enemy ship\(s\)(text for fleet status reports)</t>
+
+      <!-- 1000 - 1999: Miscellaneous -->
+      <t id="1000">Passive</t>
+      <t id="1001">Defensive</t>
+      <t id="1002">Aggressive</t>
+      <t id="1003">Break</t>
+      <t id="1004">Don't break</t>
+      <t id="1005">Commander</t>
+      <t id="1006">New Fleet</t>
+      <t id="1007">Fleet</t>
+
+      <!-- 9000 - 9999: Administration -->
+      <t id="9000">UFO Configuration</t>
+      <t id="9001">Not supported yet(label used in case player is trying to assign fighter to capital ship)</t>
+      <t id="9995">Successfully uninstalled UFO V%1.\nPlease save the game, close Rebirth, delete the UFO folder from your extensions folder, then load and save your game.</t>
+      <t id="9998">Thank you for upgrading to UFO V0.5.0. This version features a brand new UI accessible via: Radial Menu -> 3-Universe -> 4-Fleet Management.\nHafe vun playing!</t>
+      <t id="9999">Thank you for installing UFO. You can access the main functions of this mod via: Radial Menu -> 3-Universe -> 4-Fleet Management.\nHafe vun playing!</t>
+    </page>
+  </add>
+</diff>

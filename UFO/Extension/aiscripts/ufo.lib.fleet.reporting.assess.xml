@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.5.0 Beta
+	Date: 26th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<!--
+  This script takes a group of enemies and adds them to the list of
+  known enemies from the fleet. It then assesses every known enemy
+  and adds the evaluation to the report.
+-->
+<aiscript name="ufo.lib.fleet.reporting.assess" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <!-- The enemies to assess -->
+    <param name="gEnemies" />
+    <!-- Bonus priority given to capital ships as targets for capital ships -->
+    <param name="iCapShipBonus" default="10" />
+    <!-- Bonus priority given to fighters as targets for fighters -->
+    <param name="iFighterBonus" default="10" />
+  </params>
+  <actions>
+    <run_script name="'mj.lib.log'" sinceversion="1">
+      <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+      <save_retval name="sLogFormat" variable="$sLogFormat" />
+      <save_retval name="iLogError" variable="$iLogError" />
+      <save_retval name="iLogInfo" variable="$iLogInfo" />
+      <save_retval name="iLogFine" variable="$iLogFine" />
+      <save_retval name="iLogFinest" variable="$iLogFinest" />
+    </run_script>
+
+    <!-- Sanity checks -->
+    <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+      <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+      <return />
+    </do_if>
+
+    <!-- Set all state variables -->
+    <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+    <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+    <do_if value="$oCommander == player.primaryship">
+      <set_value name="$iLeadership" exact="5" />
+    </do_if>
+    <do_else>
+      <set_value name="$iLeadership" exact="$oCommander.pilot.skill.leadership" />
+    </do_else>
+
+    <!-- Run initilization script -->
+    <run_script name="'ufo.lib.fleet.reporting.initialize'" sinceversion="1" />
+
+    <!-- 
+      We fetch the enemy reports. Each report is a list in the form:
+      1 - enemy ship
+      2 - timestamp
+      3 - priority for capital ships
+      4 - priority for fighters
+      We use lists instead of dictionaries since too many virtual actors
+      would be created and disposed rapidly from this procedure.
+    -->
+    <set_value name="$lReports" exact="$Fleet.$lReports" />
+
+    <!-- We check all existing reports and remove all already known enemies from the new ones -->
+    <do_all exact="$lReports.count" counter="$i" reverse="true">
+      <set_value name="$oEnemy" exact="$lReports.{$i}.{1}" />
+
+      <!-- While we are here, we also do some cleanup -->
+      <do_if value="not @$oEnemy.exists or not @$oEnemy.isoperational">
+        <remove_value name="$lReports.{$i}" />
+        <continue />
+      </do_if>
+
+      <set_value name="$tTimestamp" exact="$lReports.{$i}.{2}" />
+
+      <!-- We check the timestamp of the last report; if it is more than 10min old, we clean it up -->
+      <do_if value="(player.age - $tTimestamp) gt 10min">
+        <remove_value name="$lReports.{$i}" />
+        <continue />
+      </do_if>
+
+      <remove_from_group group="$gEnemies" object="$oEnemy" />
+    </do_all>
+
+    <!-- Then, we add all newly found enemies to the reports -->
+    <do_if value="$gEnemies.count gt 0">
+      <do_all exact="$gEnemies.count" counter="$i">
+        <set_value name="$oEnemy" exact="$gEnemies.{$i}" />
+        <set_value name="$lNewReport" exact="[$oEnemy,player.age,0,0]" />
+        <append_to_list name="$lReports" exact="$lNewReport" />
+      </do_all>
+
+      <!-- 
+        To simulate the time it takes to synchronize with the fleet, we wait a 
+        short (skill-based) time until we proceed. The amount is also based on 
+        the skill of our fleet commander.
+      -->
+      <wait exact="4s - (0.4 * $iLeadership) - (0.2s * this.skill.combat)" sinceversion="1" />
+    </do_if>
+
+    <!-- Now, we can start assessing the enemies -->
+    <do_all exact="$lReports.count" counter="$i">
+      <set_value name="$oEnemy" exact="$lReports.{$i}.{1}" />
+      <set_value name="$fOldCapitalPriority" exact="$lReports.{$i}.{3}" />
+      <set_value name="$fOldFighterPriority" exact="$lReports.{$i}.{4}" />
+      <set_value name="$fPriority" exact="0" />
+      
+      <set_value name="$bIsCap" exact="[class.ship_l,class.ship_xl,class.station].indexof.{$oEnemy.class}" />
+
+      <!-- prioritize targets by certain conditions -->
+
+      <!-- damage potential vs. time to destroy -->
+      <do_if value="($oEnemy.hull + $oEnemy.shield) gt 0">
+        <do_if value="@$oEnemy.dps.all">
+          <!-- We base the accuracy of this estimation on the combat skill of this entity -->
+          <set_value name="$fAccuracy" min="0.5 + (0.1 * this.skill.combat)" max="1.5 - (0.1 * this.skill.combat)"/>
+          <set_value name="$fPriority" exact="$fPriority + 10 * (($oEnemy.dps.all)f / ($oEnemy.hull + $oEnemy.shield)f) * $fAccuracy" />
+        </do_if>
+      </do_if>
+
+      <!-- TODO: recent damage against this ship, an escortee or allies -->
+      <!-- TODO: evaluate fight/flight by comparing combined enemy strength to combined allied strength? -->
+      
+      <!-- If no assessment was available for this enemy yet, we initialize it -->
+      <do_if value="$fOldCapitalPriority == 0">
+        <set_value name="$lReports.{$i}.{3}" exact="$fPriority + ($iCapShipBonus * $bIsCap)" />
+      </do_if>
+      
+      <!-- Otherwise, we take the average of the existing assessment and the new -->
+      <do_else>
+        <set_value name="$lReports.{$i}.{3}" exact="($fPriority + ($iCapShipBonus * $bIsCap) + $fOldCapitalPriority)/2" />
+      </do_else>
+
+      <!-- Repeat for fighters -->
+      <do_if value="$fOldFighterPriority == 0">
+        <set_value name="$lReports.{$i}.{4}" exact="$fPriority + ($iFighterBonus * not $bIsCap)" />
+      </do_if>
+      <do_else>
+        <set_value name="$lReports.{$i}.{4}" exact="($fPriority + ($iFighterBonus * not $bIsCap) + $fOldFighterPriority)/2" />
+      </do_else>
+
+      <debug_text text="$sLogFormat.[player.age,'Evaluated target %1 of class %2 and size %3. Priorities: [%4, %5]'.[$oEnemy.knownname,$oEnemy.class,$oEnemy.size,$lReports.{$i}.{3},$lReports.{$i}.{4}]]" filter="error" chance="$iLogFinest" />
+    </do_all>
+    
+    <!-- If there are currently no reports, we can clear the attack status of the fleet -->
+    <do_if value="$lReports.count == 0">
+      <remove_value name="$Fleet.$bWasAttacked" />
+    </do_if>
+  </actions>
+</aiscript>

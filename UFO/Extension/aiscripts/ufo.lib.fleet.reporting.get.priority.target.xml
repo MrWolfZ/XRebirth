@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.5.0 Beta
+	Date: 26th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<!--
+  This script checks for the target with the highest priority
+  amonst the currently known enemies.
+  
+  It then returns the priority target as well as all other targets
+  in range.
+-->
+<aiscript name="ufo.lib.fleet.reporting.get.priority.target" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <!-- At what additional distance are we engaging capital ships? -->
+    <param name="mCapShipOffset" default="3.5km" />
+    <!-- The factor we multiply the allowed distance by if an enemy was reported by fleet command -->
+    <param name="fReportLenienceFactor" default="2f" />
+    <!-- Are we acquiring a target for a drone? -->
+    <param name="bForDrone" default="false" />
+    <!-- Should we attack stations? -->
+    <param name="bEngageStations" default="true" />
+  </params>
+  <attention min="unknown">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+
+      <!-- Sanity checks -->
+      <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+        <return />
+      </do_if>
+
+      <!-- Set all state variables -->
+      <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+      <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+
+      <!-- Run initilization script -->
+      <run_script name="'ufo.lib.fleet.reporting.initialize'" sinceversion="1" />
+
+      <!-- 
+        We fetch the enemy reports. Each report is a list in the form:
+        1 - enemy ship
+        2 - timestamp
+        3 - priority for capital ships
+        4 - priority for fighters
+        We use lists instead of dictionaries since too many virtual actors
+        would be created and disposed rapidly from this procedure.
+      -->
+      <set_value name="$lReports" exact="$Fleet.$lReports" />
+
+      <set_value name="$fHighestPriority" exact="-1" />
+      <set_value name="$oPriorityTarget" exact="null" />
+      <create_group groupname="$gAdditionalTargets" />
+      
+      <!-- We check all fleet reports to find our priority target -->
+      <do_all exact="$lReports.count" counter="$i" reverse="true">
+        <set_value name="$oEnemy" exact="$lReports.{$i}.{1}" />
+
+        <do_if value="not $oEnemy.isoperational">
+          <continue />
+        </do_if>
+
+        <do_if value="$oEnemy.isclass.station and $bEngageStations">
+          <!-- This section can be unperformant -->
+          <find_object_component object="$oEnemy" surfaceelement="false" multiple="true" integrated="false" groupname="$gStationComponents">
+            <match_size min="100m"/>
+          </find_object_component>
+
+          <!-- If we found subtargets, we don't need to add the station -->
+          <do_if value="$gStationComponents.count gt 0">
+            <add_to_group groupname="$gAdditionalTargets" group="$gStationComponents" />
+            
+            <do_if value="$fHighestPriority == -1">
+              <set_value name="$oPriorityTarget" exact="$gStationComponents.{1}" />
+            </do_if>
+            
+            <continue />
+          </do_if>
+        </do_if>
+        
+        <!-- Determine which priority is relevant for us -->
+        <do_if value="not $bForDrone and [entitytype.commander,entitytype.defencecontrol].indexof.{this.type}">
+          <set_value name="$fPriority" exact="$lReports.{$i}.{3}" />
+        </do_if>
+        <do_else>
+          <set_value name="$fPriority" exact="$lReports.{$i}.{4}" />
+        </do_else>
+        
+        <!-- We check if the target is relevant for us -->
+        <set_value name="$bIsCap" exact="[class.ship_l,class.ship_xl,class.station].indexof.{$oEnemy.class}" />
+        <set_value name="$mDist" exact="this.ship.distanceto.{$oEnemy}" />
+        <do_if value="$mDist lt ($mEngageDist + ($bIsCap * $mCapShipOffset)) * $fReportLenienceFactor">
+          
+          <!-- Check if we found a new priority target -->
+          <do_if value="$fPriority gt $fHighestPriority">
+            <set_value name="$oPriorityTarget" exact="$oEnemy" />
+            <set_value name="$fHighestPriority" exact="$fPriority" />
+          </do_if>
+
+          <add_to_group groupname="$gAdditionalTargets" object="$oEnemy" />
+        </do_if>
+      </do_all>
+      
+      <do_if value="$gAdditionalTargets.count gt 0">
+        <set_value name="$sLabel" exact="'us'" />
+        <do_if value="$bForDrone">
+          <set_value name="$sLabel" exact="'drone'" />
+        </do_if>
+        <debug_text text="$sLogFormat.[player.age,'Fleet reports %1 enemies relevant for %2.'.[$gAdditionalTargets.count,$sLabel]]" filter="error" chance="$iLogFinest" />
+      </do_if>
+
+      <!-- We also remove the selected priority target from the additional targets -->
+      <do_if value="$oPriorityTarget">
+        <remove_from_group group="$gAdditionalTargets" object="$oPriorityTarget" />
+      </do_if>
+      
+      <!-- We then return our priority target and all other relevant targets -->
+      <return value="$oPriorityTarget">
+        <retval name="gAdditionalTargets" value="$gAdditionalTargets" />
+      </return>
+    </actions>
+  </attention>
+</aiscript>
+

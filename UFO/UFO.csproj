@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{05C9A4AB-A051-4868-AC7F-CA862C400AF1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UFO</RootNamespace>
+    <AssemblyName>UFO</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_choose_stance.lua" />
+    <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_configuration.lua" />
+    <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_fleet_commands.lua" />
+    <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_fleet_management.lua" />
+    <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_map.lua" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Extension\aiscripts\fight.attack.object.drone.leader.xml" />
+    <Content Include="Extension\aiscripts\ufo.capital.captain.combat.xml" />
+    <Content Include="Extension\aiscripts\ufo.capital.captain.main.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Extension\aiscripts\ufo.capital.commander.main.xml" />
+    <Content Include="Extension\aiscripts\ufo.capital.commander.move.to.zone.xml" />
+    <Content Include="Extension\aiscripts\ufo.capital.defence.fire.xml" />
+    <Content Include="Extension\aiscripts\ufo.capital.defence.main.xml" />
+    <Content Include="Extension\aiscripts\ufo.fight.fighter.attack.object.xml" />
+    <Content Include="Extension\aiscripts\ufo.fighter.commander.main.xml" />
+    <Content Include="Extension\aiscripts\ufo.fighter.pilot.combat.xml" />
+    <Content Include="Extension\aiscripts\ufo.fighter.pilot.main.xml" />
+    <Content Include="Extension\aiscripts\ufo.fighter.pilot.move.zone.xml" />
+    <Content Include="Extension\aiscripts\ufo.lib.fleet.reporting.assess.xml" />
+    <Content Include="Extension\aiscripts\ufo.lib.fleet.reporting.get.priority.target.xml" />
+    <Content Include="Extension\aiscripts\ufo.lib.fleet.reporting.initialize.xml" />
+    <Content Include="Extension\aiscripts\ufo.lib.fleet.reporting.scan.xml" />
+    <Content Include="Extension\aiscripts\ufo.move.capital.attack.zone.xml" />
+    <Content Include="Extension\aiscripts\ufo.start.xml" />
+    <Content Include="Extension\content.xml" />
+    <Content Include="Extension\md\UFO.xml" />
+    <Content Include="Extension\md\UFO_Management.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Extension\md\UFO_Reporting.xml" />
+    <Content Include="Extension\README.txt" />
+    <Content Include="Extension\t\0001-L007.xml" />
+    <Content Include="Extension\t\0001-L033.xml" />
+    <Content Include="Extension\t\0001-L034.xml" />
+    <Content Include="Extension\t\0001-L039.xml" />
+    <Content Include="Extension\t\0001-L044.xml" />
+    <Content Include="Extension\t\0001-L049.xml" />
+    <Content Include="Extension\t\0001-L086.xml" />
+    <Content Include="Extension\t\0001-L088.xml" />
+    <Content Include="Extension\ui\addons\detailmonitor\detailmonitor.xml" />
+    <Content Include="Publish\Forums.txt" />
+    <Content Include="Publish\Misc Notes.txt" />
+    <Content Include="Publish\Nexus.txt" />
+    <Content Include="Publish\Release Post.txt" />
+    <Content Include="Publish\Workshop.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

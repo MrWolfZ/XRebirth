@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.5.0 Beta
+	Date: 26th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<!--
+  This script should only be run on entities of type defencecontrol that 
+  are currently working on a ship of size l or larger.
+  
+  Check for enemies and engages if necessary.
+-->
+<aiscript name="ufo.capital.defence.main" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <!-- Should we attack stations in range? -->
+    <param name="bEngageStations" default="true" />
+  </params>
+  <interrupts>
+    <!-- Handler used to update the parameters under which this entity works -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="this.ship" param="'UFO_UpdateState'" />
+      </conditions>
+      <actions>
+        <debug_text text="$sLogFormat.[player.age,'Received update state request. Updating...']" filter="error" chance="$iLogInfo" />
+
+        <!-- Set all state variables -->
+        <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+        <set_value name="$sAggressionLevel" exact="this.$UFO.$sAggressionLevel" />
+        <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+        <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+        <set_value name="$bIsAggressive" exact="$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sAggressive" />
+        <set_value name="$bIsDefensive" exact="$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sDefensive" />
+      </actions>
+    </handler>
+    <!-- Handler for updating debug level parameters -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="player.primaryship" param="'UFO_UpdateDebugLevel'" />
+      </conditions>
+      <actions>
+        <set_value name="$iLogError" exact="100 * (global.$UFO.$iDebugLevel ge 0)" />
+        <set_value name="$iLogInfo" exact="100 * (global.$UFO.$iDebugLevel ge 1)" />
+        <set_value name="$iLogFine" exact="100 * (global.$UFO.$iDebugLevel ge 2)" />
+        <set_value name="$iLogFinest" exact="100 * (global.$UFO.$iDebugLevel ge 3)" />
+      </actions>
+    </handler>
+  </interrupts>
+  <attention min="unknown">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+
+      <!-- First, we do some parameter sanity checking -->
+      <do_if value="this.type != entitytype.defencecontrol or not [class.ship_l,class.ship_xl].indexof.{this.ship.class}">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities of type defencecontrol that are currently working on a ship of size l or larger']" />
+        <return />
+      </do_if>
+      <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+        <return />
+      </do_if>
+
+      <!-- Set all state variables -->
+      <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+      <set_value name="$sAggressionLevel" exact="this.$UFO.$sAggressionLevel" />
+      <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+      <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+      <set_value name="$bIsAggressive" exact="$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sAggressive" />
+      <set_value name="$bIsDefensive" exact="$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sDefensive" />
+
+      <!-- We switch around the battlestate a bit to clean up any screwed up animation state -->
+      <activate_battlestate object="this.ship" state="battlestate_jumpprep" />
+
+      <debug_text text="$sLogFormat.[player.age,'Started main defence officer script. Fleet ID: %1, aggression level: %2, formation mode: %3, engagement distance: %4'.[$Fleet.$iId, $sAggressionLevel, this.$UFO.$sFormationMode, $mEngageDist]]" filter="error" chance="$iLogInfo" />
+
+      <!-- TODO: make dependant on skills -->
+      <set_value name="$tLastDroneLaunch" exact="player.age - 500s" />
+      <set_value name="$tNextAmmoCheck" exact="player.age + 100s" />
+
+      <do_while value="true">
+        <!-- We set a special blackboard entry which is used by the game for defence officer mode -->
+        <set_value name="this.$config_attackenemies" exact="$bIsAggressive" />
+
+        <!-- We run our fleet scan routines to find targets -->
+        <run_script name="'ufo.lib.fleet.reporting.scan'" result="$gEnemies" sinceversion="1" />
+
+        <!-- Now, we report and assess the enemies -->
+        <run_script name="'ufo.lib.fleet.reporting.assess'" sinceversion="1">
+          <param name="gEnemies" value="$gEnemies" />
+        </run_script>
+
+        <!-- Then, only if we are aggressive or were attacked, do we engage -->
+        <do_if value="$bIsAggressive or ($bIsDefensive and @$Fleet.$bWasAttacked)">
+
+          <!-- Finally, we ask the fleet to give us a target -->
+          <run_script name="'ufo.lib.fleet.reporting.get.priority.target'" result="$oPriorityTarget" sinceversion="1">
+            <save_retval name="gAdditionalTargets" variable="$gAdditionalTargets" />
+          </run_script>
+          
+          <!-- We have to wait a short time here, since the game otherwise thinks calling the script twice is an error -->
+          <wait exact="10ms" sinceversion="1" />
+
+          <!-- We also ask for a drone target -->
+          <run_script name="'ufo.lib.fleet.reporting.get.priority.target'" result="$oDroneTarget" sinceversion="1">
+            <param name="bForDrone" value="true" />
+          </run_script>
+
+          <!-- If there is nothing to engage, we do nothing -->
+          <do_if value="not $oPriorityTarget">
+            <debug_text text="$sLogFormat.[player.age,'No enemies in engage distance (%1m). Aborting...'.[$mEngageDist]]" filter="error" chance="$iLogFine" />
+          </do_if>
+          <do_else>
+            <!-- We signal our captain that enemies were found -->
+            <signal_objects object="this.ship" param="'UFO_EnemyActivity'" />
+
+            <!-- We found some enemies, switching battle state -->
+            <do_if value="@this.$UFO.$sLastBattleState != 'battlestate_red'">
+              <debug_text text="$sLogFormat.[player.age,'We were not at red alert yet. Old state: %1. Switching to red alert...'.[@this.$UFO.$sLastBattleState]]" filter="error" chance="$iLogFinest" />
+              <activate_battlestate object="this.ship" state="battlestate_red" />
+              <set_value name="this.$UFO.$sLastBattleState" exact="'battlestate_red'" />
+            </do_if>
+            <activate_flaks object="this.ship" />
+
+            <debug_text text="$sLogFormat.[player.age,'Found %1 enemies in %2m. Engaging...'.[$gAdditionalTargets.count + 1,$mEngageDist]]" filter="error" chance="$iLogFine" />
+
+            <!-- Let the fire rain down upon them :) -->
+            <set_turret_targets object="this.ship" target="$gAdditionalTargets.list" preferredtarget="$oPriorityTarget" weapontype="combat" />
+
+            <!-- Call the workaround script to get primary weapons to work -->
+            <run_script name="'ufo.capital.defence.fire'" sinceversion="1">
+              <param name="oPriorityTarget" value="$oPriorityTarget" />
+              <param name="gAdditionalTargets" value="$gAdditionalTargets.list" />
+            </run_script>
+
+            <!-- Launch some drones if we have any -->
+            <do_if value="player.age gt ($tLastDroneLaunch + 100s) and @$oDroneTarget">
+              <launch_drone groupname="$gDrones" object="this.ship" exact="5" group="unitcategory.defence"/>
+              <set_value name="$tLastDroneLaunch" exact="player.age"/>
+              <do_if value="$gDrones.count gt 0">
+                <debug_text text="$sLogFormat.[player.age,'Launching drones...']" filter="error" chance="$iLogFine" />
+
+                <!-- Use last drone as commander -->
+                <!-- TODO: choose commander by strength -->
+                <set_value name="$oDroneCommander" exact="$gDrones.{$gDrones.count}" />
+                <start_script object="$oDroneCommander.pilot" name="'fight.attack.object.drone.leader'">
+                  <param name="target" value="$oDroneTarget" />
+                </start_script>
+
+                <!-- We need to wait a tiny bit to make sure the leader script started running -->
+                <wait exact="0.2s" sinceversion="1" />
+
+                <!-- Then we can assign the followers -->
+                <do_if value="@$oDroneCommander.pilot.$subordinatescript">
+                  <do_all exact="$gDrones.count - 1" counter="$i">
+                    <set_value name="$oDrone" exact="$gDrones.{$i}" />
+                    <set_object_commander object="$oDrone" commander="$oDroneCommander" />
+                    <start_script object="$oDrone.pilot" name="$oDroneCommander.pilot.$subordinatescript" />
+                  </do_all>
+                </do_if>
+                <do_else>
+                  <debug_text filter="error" text="$sLogFormat.[player.age,'Could not launch drones since commander script was not found!']" chance="$iLogError" />
+                </do_else>
+              </do_if>
+
+              <do_else>
+                <debug_text text="$sLogFormat.[player.age,'Could not launch drones. No drones available.']" filter="error" chance="$iLogFine" />
+              </do_else>
+            </do_if>
+
+            <!-- Perform an ammo check -->
+            <!-- TODO: tell pilot or supply-ship to buy ammo instead of spawning it -->
+            <!-- TODO: also buy new drones -->
+            <!-- TODO: make dependant on skills -->
+            <do_if value="player.age gt @$tNextAmmoCheck">
+              <debug_text text="$sLogFormat.[player.age,'Checking for ammunition...']" filter="error" chance="$iLogFinest" />
+
+              <set_value name="$tAmmoDelay" min="8min" max="12min" />
+              <set_value name="$tNextAmmoCheck" exact="player.age + $tAmmoDelay" />
+
+              <run_script name="'lib.ammo.missiles'" result="$bNeedAmmo" sinceversion="1">
+                <save_retval name="macros" variable="$lMacros" />
+                <save_retval name="amounts" variable="$lAmounts" />
+              </run_script>
+
+              <do_if value="$bNeedAmmo">
+                <debug_text text="$sLogFormat.[player.age,'Need ammunition. Reloading...']" filter="error" chance="$iLogFinest" />
+                <do_all exact="$lMacros.count" counter="$i">
+                  <add_ammo object="this.ship" macro="$lMacros.{$i}" amount="$lAmounts.{$i}" />
+                </do_all>
+              </do_if>
+
+              <remove_value name="$lMacros" />
+              <remove_value name="$lAmounts" />
+            </do_if>
+
+            <!-- We sleep for a variable amount of time (based on combat skill) before we check for enemies again -->
+            <set_value name="$tOffset" exact="10s - (2s * this.skill.combat)"/>
+            <wait min="5s + $tOffset" max="10s + $tOffset" sinceversion="1" />
+
+            <continue />
+          </do_else>
+        </do_if>
+
+        <cease_fire object="this.ship" weapontype="combat" />
+
+        <!-- If we aren't fighting, set battle state to yellow -->
+        <do_if value="@this.$UFO.$sLastBattleState != 'battlestate_jumpprep'">
+          <debug_text text="$sLogFormat.[player.age,'We were not at yellow alert. Old state: %1. Switching to yellow alert...'.[@this.$UFO.$sLastBattleState]]" filter="error" chance="$iLogFine" />
+          <activate_battlestate object="this.ship" state="battlestate_jumpprep" />
+          <set_value name="this.$UFO.$sLastBattleState" exact="'battlestate_jumpprep'" />
+        </do_if>
+
+        <debug_text text="$sLogFormat.[player.age,'Sleeping...']" filter="error" chance="$iLogFinest" />
+
+        <!-- We sleep for a variable amount of time (based on combat skill) before we check for enemies again -->
+        <set_value name="$tOffset" exact="10s - (2s * this.skill.combat)"/>
+        <wait min="5s + $tOffset" max="10s + $tOffset" sinceversion="1" />
+      </do_while>
+
+      <remove_value name="this.$UFO.$sLastBattleState" />
+    </actions>
+  </attention>
+  <on_abort>
+    <debug_text text="$sLogFormat.[player.age,'Aborted script. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+    <do_if value="@this.$UFO.$sLastBattleState != 'battlestate_jumpprep'">
+      <debug_text text="$sLogFormat.[player.age,'We were not at yellow alert. Old state: %1. Switching to yellow alert...'.[@this.$UFO.$sLastBattleState]]" filter="error" chance="$iLogFine" />
+      <activate_battlestate object="this.ship" state="battlestate_jumpprep" />
+    </do_if>
+    <remove_value name="this.$UFO.$sLastBattleState" />
+    <cease_fire object="this.ship" />
+  </on_abort>
+</aiscript>

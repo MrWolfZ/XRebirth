@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+  
+  Author: MadJoker
+  
+  Last Change:
+	Version: V0.5.0 Beta
+	Date: 26th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<!--
+  This script is the main entry point for all entities running UFO scripts.
+-->
+<aiscript name="ufo.start" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <interrupts>
+    <!-- Global interrupt handler to indicate fleets being attacked -->
+    <handler>
+      <conditions>
+        <event_object_attacked object="this.ship" />
+      </conditions>
+      <actions>
+        <do_if value="not @this.$UFO.$Fleet.$bWasAttacked">
+          <debug_text filter="error" text="$sLogFormat.[player.age,'I was attacked. Signalling my fleet to defend itself...']" chance="$iLogInfo" />
+          <set_value name="this.$UFO.$Fleet.$bWasAttacked" exact="true" />
+        </do_if>
+      </actions>
+    </handler>
+  </interrupts>
+  <attention min="unknown">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+
+      <debug_text filter="error" text="$sLogFormat.[player.age,'Starting fleet scripts on entity \'%1\'...'.[this.knownname]]" chance="$iLogInfo" />
+
+      <!-- Put this script on the stack -->
+      <append_to_list name="this.$UFO.$lActiveScripts" exact="'ufo.start'" />
+
+      <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+
+      <!-- Check for the different entity types, and run the corresponding scripts -->
+      <do_if value="this.type == entitytype.defencecontrol">
+        <run_script name="'ufo.capital.defence.main'" sinceversion="1">
+          <!-- Should we attack stations in range? -->
+          <param name="bEngageStations" value="true" />
+        </run_script>
+      </do_if>
+      <do_elseif value="this.type == entitytype.engineer">
+        <!-- TODO: engineers are not yet supported -->
+      </do_elseif>
+
+      <!-- At this point, we know the entity is either a pilot or captain -->
+
+      <do_elseif value="this.type == entitytype.pilot">
+        <!-- The pilot of the fleet commander needs a different script -->
+        <do_if value="this.ship == $Fleet.$oCommander">
+          <run_script name="'ufo.fighter.commander.main'" sinceversion="1" />
+        </do_if>
+        <do_else>
+          <run_script name="'ufo.fighter.pilot.main'" sinceversion="1" />
+        </do_else>
+      </do_elseif>
+      <do_elseif value="this.type == entitytype.commander">
+        <!-- The captain of the fleet commander needs a different script -->
+        <do_if value="this.ship == $Fleet.$oCommander">
+          <run_script name="'ufo.capital.commander.main'" sinceversion="1" />
+        </do_if>
+        <do_else>
+          <!-- Start default follow script for captain -->
+          <run_script name="'ufo.capital.captain.main'" sinceversion="1" />
+        </do_else>
+      </do_elseif>
+
+      <!-- Remove this script from the stack -->
+      <remove_value name="this.$UFO.$lActiveScripts.{this.$UFO.$lActiveScripts.count}" />
+    </actions>
+  </attention>
+  <on_abort>
+    <!-- Remove this script from the stack -->
+    <remove_value name="this.$UFO.$lActiveScripts.{this.$UFO.$lActiveScripts.count}" />
+  </on_abort>
+</aiscript>

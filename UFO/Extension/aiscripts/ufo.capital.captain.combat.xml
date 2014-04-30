@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.5.0 Beta
+	Date: 26th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<!--
+  This script should only be run on entities of type commander that 
+  are currently piloting a ship of size l or larger.
+  
+  Check for enemies and engages if necessary.
+-->
+<aiscript name="ufo.capital.captain.combat" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <param name="bBoosting" default="false" />
+  </params>
+  <interrupts>
+    <!-- Handler used to update the parameters under which this entity works -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="this.ship" param="'UFO_UpdateState'" />
+      </conditions>
+      <actions>
+        <debug_text text="$sLogFormat.[player.age,'Received update state request. Updating...']" filter="error" chance="$iLogInfo" />
+
+        <!-- Set all state variables -->
+        <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+        <set_value name="$sAggressionLevel" exact="this.$UFO.$sAggressionLevel" />
+        <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+        <!-- The maximum distance we may be away from our target before we abort pursuing enemies -->
+        <set_value name="$mAbortDist" exact="$mEngageDist + 5km" />
+        <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+      </actions>
+    </handler>
+    <!-- Handler for updating debug level parameters -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="player.primaryship" param="'UFO_UpdateDebugLevel'" />
+      </conditions>
+      <actions>
+        <set_value name="$iLogError" exact="100 * (global.$UFO.$iDebugLevel ge 0)" />
+        <set_value name="$iLogInfo" exact="100 * (global.$UFO.$iDebugLevel ge 1)" />
+        <set_value name="$iLogFine" exact="100 * (global.$UFO.$iDebugLevel ge 2)" />
+        <set_value name="$iLogFinest" exact="100 * (global.$UFO.$iDebugLevel ge 3)" />
+      </actions>
+    </handler>
+  </interrupts>
+  <attention min="unknown">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+
+      <!-- First, we do some parameter sanity checking -->
+      <do_if value="this.type != entitytype.commander or not [class.ship_l,class.ship_xl].indexof.{this.ship.class}">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities of type commander that are currently piloting a ship of size l or larger']" />
+        <return />
+      </do_if>
+      <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+        <return />
+      </do_if>
+
+      <!-- Set all state variables -->
+      <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+      <set_value name="$sAggressionLevel" exact="this.$UFO.$sAggressionLevel" />
+      <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+      <!-- The maximum distance we may be away from our target before we abort pursuing enemies -->
+      <set_value name="$mAbortDist" exact="$mEngageDist + 5km" />
+      <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+
+      <!-- Check if we are interested in fighting -->
+      <set_value name="$bIsPassive" exact="$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sPassive" />
+      <set_value name="$bIsDefensive" exact="$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sDefensive" />
+      <do_if value="$bIsPassive or ($bIsDefensive and not @$Fleet.$bWasAttacked)">
+        <debug_text text="$sLogFormat.[player.age,'We are %1 and not interested in fighting. Aborting...'.[$sAggressionLevel]]" filter="error" chance="$iLogFinest" />
+        <return value="false" />
+      </do_if>
+
+      <!-- We ask the fleet to give us a target -->
+      <run_script name="'ufo.lib.fleet.reporting.get.priority.target'" result="$oPriorityTarget" sinceversion="1">
+        <save_retval name="gAdditionalTargets" variable="$gAdditionalTargets" />
+      </run_script>
+
+      <!-- If there is nothing to engage, we return -->
+      <do_if value="not $oPriorityTarget">
+        <debug_text text="$sLogFormat.[player.age,'No enemies in engage distance (%1m). Aborting...'.[$mEngageDist]]" filter="error" chance="$iLogFinest" />
+        <return value="false" />
+      </do_if>
+
+      <set_value name="$oldPriorityTarget" exact="@this.$UFO.$oCombatPriorityTarget" />
+      <set_value name="this.$UFO.$oCombatPriorityTarget" exact="$oPriorityTarget" />
+
+      <!-- Stop boosting in case we were -->
+      <do_if value="$bBoosting">
+        <debug_text text="$sLogFormat.[player.age,'Stopping boost...']" filter="error" chance="$iLogFinest" />
+        <stop_boost object="this.ship" />
+        <set_value name="$bBoosting" exact="false" />
+        <stop_moving object="this.ship" />
+      </do_if>
+
+      <!-- Instead of flying towards the enemy directly (which bugs the game out sometimes) we move to a position close to it -->
+      <select_flight_behaviour entity="this" evasive="false" result="$eBehaviour" />
+      
+      <!-- we only choose a new target position if our target changed -->
+      <do_if value="not this.$UFO.$pCombatTargetPos? or this.$UFO.$oCombatPriorityTarget != $oldPriorityTarget">
+        <get_safe_pos result="this.$UFO.$pCombatTargetPos" zone="$oPriorityTarget.zone" space="$oPriorityTarget.zone" radius="this.ship.size" object="$oPriorityTarget" min="500m" max="1000m" />
+      </do_if>
+
+      <debug_text text="$sLogFormat.[player.age,'Priority target %1 is at position %2. Calculated target position: %3.'.[$oPriorityTarget.knownname,$oPriorityTarget.position,this.$UFO.$pCombatTargetPos]]" filter="error" chance="$iLogFine" />
+
+      <!-- TODO: Removed rotation logic for now, since it's hard to verify if it works -->
+      <do_if value="false">
+        <!-- TODO: make this dependent on combat skill -->
+        <!-- We try to figure out where our most efficient weapons are against the target -->
+        <set_value name="$iMaxDPS" exact="-1hp" />
+        <set_value name="$rQRotation" exact="rotation.[0,0,0]" />
+        <set_value name="$aRotations" exact="[rotation.[0,pi/2,0],rotation.[0,3*pi/2,0], rotation.[pi/2,0,0], rotation.[3*pi/2,0,0], rotation.[0,0,0], rotation.[0,pi,0]]" />
+        <set_value name="$aDPS" exact="[this.ship.dps.turrets.fortarget.{$oPriorityTarget}.up,this.ship.dps.turrets.fortarget.{$oPriorityTarget}.down,this.ship.dps.turrets.fortarget.{$oPriorityTarget}.left,this.ship.dps.turrets.fortarget.{$oPriorityTarget}.right,this.ship.dps.turrets.fortarget.{$oPriorityTarget}.front,this.ship.dps.turrets.fortarget.{$oPriorityTarget}.back]" />
+        <do_all exact="$aDPS.count" counter="$i">
+          <debug_text text="$sLogFormat.[player.age,'Evaluating DPS against target %1 in %2: %3hp.'.[$oPriorityTarget.knownname,$aRotations.{$i},$aDPS.{$i}]]" filter="error" chance="$iLogFinest" />
+          <do_if value="$aDPS.{$i} gt $iMaxDPS">
+            <set_value name="$iMaxDPS" exact="$aDPS.{$i}" />
+            <set_value name="$rQRotation" exact="$aRotations.{$i}" />
+          </do_if>
+        </do_all>
+
+        <debug_text text="$sLogFormat.[player.age,'Our most efficient weapons against enemy %1 are at %2...'.[$oPriorityTarget.knownname,$rQRotation]]" filter="error" chance="$iLogFinest" />
+
+        <create_orientation name="$rRotation" refobject="$oPriorityTarget" orientation="look_at">
+          <position x="$pPos.x" y="$pPos.y" z="$pPos.z" />
+        </create_orientation>
+
+        <set_value name="$rRotation" exact="rotation.[$rRotation.yaw + $rQRotation.yaw,$rRotation.pitch + $rQRotation.pitch,$rRotation.roll + $rQRotation.roll]" />
+      </do_if>
+
+      <!-- The frequency of distance checks is dependent on combat skill -->
+      <set_value name="$tSleep" min="7s" max="10s"/>
+      <set_value name="$tOffset" exact="5s - (1s * this.skill.combat)"/>
+      <set_value name="$tSleep" exact="$tSleep + $tOffset" />
+
+      <!-- We also make sure, that we wait _at least_ the sleep period -->
+      <set_value name="$tMoveStart" exact="player.age" />
+      
+      <!-- Move towards target position -->
+      <!-- TODO:
+      <rotation value="$rRotation" />
+      <position value="this.$UFO.$pCombatTargetPos" />
+       -->
+      <move_to object="this.ship" destination="$oPriorityTarget" flightbehaviour="flightbehaviour.bigfight" forcesteering="true" sinceversion="1">
+        <interrupt>
+          <conditions>
+            <check_any>
+              <event_object_destroyed object="$oPriorityTarget" />
+            </check_any>
+          </conditions>
+        </interrupt>
+        <interrupt_after_time time="$tSleep" />
+      </move_to>
+
+      <set_value name="$tMoveDuration" exact="player.age - $tMoveStart" />
+
+      <!-- This sleep prevents spamming of movements -->
+      <do_if value="$tMoveDuration lt $tSleep">
+        <wait exact="$tSleep - $tMoveDuration" sinceversion="1" />
+      </do_if>
+
+      <!-- Since we attacked an enemy, we are in combat -->
+      <return value="true" />
+    </actions>
+  </attention>
+  <on_abort>
+    <debug_text text="$sLogFormat.[player.age,'Aborted script. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+  </on_abort>
+</aiscript>
