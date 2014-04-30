@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<content id="LibMJ" name="MadJoker's Library Scripts" description="A collection of library scripts." author="MadJoker" version="001" date="2014-04-08" save="false">
-  <!-- Requires minimum game version 1.30 -->
-  <dependency version="130"/>
-</content>
