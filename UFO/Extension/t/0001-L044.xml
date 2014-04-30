@@ -5,10 +5,10 @@
 	Author: MadJoker
   
   Last Change:
-	Version: V0.4.3 Beta
-	Date: 25th Dec 2013
+	Version: V0.5.0 Beta
+	Date: 30th Apr 2014
   
-  X Rebirth version: 1.21
+  X Rebirth version: 1.30
 -->
 <diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <add sel="/language[@id='44']">
