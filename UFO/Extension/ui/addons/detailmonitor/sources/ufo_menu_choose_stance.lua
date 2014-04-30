@@ -167,7 +167,7 @@ end
 Functions.sliderProvider = function (state)
 	local sliderInfo = {
 		background = "tradesellbuy_blur",
-		captionCenter = "Max. Engagement Distance (1km - 50km)", -- ReadText
+		captionCenter = ReadText(99998,14) ..  " (1km - 50km)", -- "Max. Engagement Distance"
 		min = 0,
 		max = 49,
 		minSelectable = 0,
