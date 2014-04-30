@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	This file is part of the X Rebirth LibMJ script library.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.0.1
+	Date: 20th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="rfc5261.xsd"> 
+	<add sel="/language[@id='7']"> 
+		<page id="99997" title="LibMJ" descr="Texts for LibMJ script library." voice="no">
+      <t id="9993">Active %1 version: V%2</t>
+      <t id="9994">Running %1 initialization cue at debug level %2...</t>
+      <t id="9995">Successfully uninstalled %1 V%2.\nPlease save the game, close Rebirth, delete the %1 folder from your extensions folder or unsubscribe in the workshop, then load and save your game.</t>
+      <t id="9996">Warning!\nYou are downgrading your %1 version: V%2 -> V%3</t>
+      <t id="9997">Installing %1 V%2...</t>
+      <t id="9998">Detected %1 update: V%2 -> V%3\nPlease save the game and load it again.</t>
+      <t id="9999">Updated %1 configuration found....Update successful!</t>
+		</page> 
+	</add> 
+</diff>

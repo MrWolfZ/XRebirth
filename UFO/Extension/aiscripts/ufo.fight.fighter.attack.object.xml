@@ -1,0 +1,697 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.4.3 Beta
+	Date: 25th Dec 2013
+  
+  X Rebirth version: 1.21
+-->
+
+<!--
+  This script causes a fighter to attack an object.
+  
+  The script is 90% copied from the stock attack script.
+  
+  TODO: write custom attack script
+-->
+<aiscript name="ufo.fight.fighter.attack.object" version="2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <param name="primarytargets" default="null" comment="Group of objects to destroy before moving on to other nearby targets" />
+    <param name="secondarytargets" default="null" comment="Group of objects to destroy after primary targets, before moving on to other nearby targets" />
+    <param name="pursuetargets" default="false" comment="" />
+    <param name="allowothertargets" default="true" comment="Whether the script shall keep running when all primary targets have been destroyed" />
+    <param name="escortees" comment="Group of objects to escort - this ship will try to stay close and shoot enemies attacking one of these" />
+    <param name="iDebugLevel" default="0"/>
+  </params>
+  <interrupts>
+    <handler>
+      <conditions>
+        <event_object_changed_zone group="$escortees" />
+      </conditions>
+      <actions>
+        <debug_text text="'[%1 - %2] Escortee %3 changed zones. Disengaging...'.[player.age,this.knownname,event.object.pilot.knownname]" filter="error" chance="100 * ($iDebugLevel ge 1)" />
+        
+        <!-- In case our escortee has warped, we need to warp to it as well, otherwise we would use standard follow logic -->
+        <do_if value="@event.object.pilot.$bUFO_Warped">
+          <debug_text text="'[%1 - %2] Escortee %3 changed zones by warping. Warping too it...'.[player.age,this.knownname,event.object.pilot.knownname]" filter="error" chance="100 * ($iDebugLevel ge 2)" />
+          <set_value name="this.$bUFO_WarpToTarget" exact="true" />
+        </do_if>
+        <set_value name="this.$bUFO_Disengage" exact="true" />
+      </actions>
+    </handler>
+  </interrupts>
+  <attention min="visible">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+      
+      <set_value name="$currenttarget" exact="null" />
+      <set_value name="$lastevadetime" exact="0" />
+      <set_value name="$lastboosttime" exact="0" />
+      <set_value name="$nextammocheck" exact="player.age + 100s" />
+      <set_value name="$safetydistance" min="this.ship.size * 4m" max="this.ship.size * 6m" />
+      <set_value name="$doevade" exact="0" />
+      <set_value name="$target" exact="null" />
+      <set_value name="$leader" exact="null" />
+      <set_value name="this.$bUFO_Disengage" exact="false" />
+      <set_value name="this.$bUFO_WarpToTarget" exact="false" />
+      <create_group groupname="$targets" />
+
+      <label name="selecttarget" />
+      <!-- if primary/secondary targets set, set them as the target list -->
+      <do_if value="@$primarytargets.count">
+        <debug_text text="'Primary targets found, choosing one of them'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        <add_to_group groupname="$targets" group="$primarytargets" />
+      </do_if>
+      <do_elseif value="@$secondarytargets.count">
+        <debug_text text="'Secondary targets found, choosing one of them'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        <add_to_group groupname="$targets" group="$secondarytargets" />
+      </do_elseif>
+      <do_elseif value="not $allowothertargets">
+        <debug_text text="'No more intact primary or secondary targets found, choosing other targets not allowed'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        <resume label="finish" />
+      </do_elseif>
+      <!-- else, if target set on blackboard, add it to the target group -->
+      <do_if value="$targets.count == 0">
+        <debug_text text="'Checking blackboard for a target object'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        <do_if value="@this.$attacktarget.isoperational">
+          <add_to_group groupname="$targets" object="this.$attacktarget" />
+        </do_if>
+      </do_if>
+      <!-- else, use enemy gravidar contacts as the target list -->
+      <do_if value="$targets.count == 0">
+        <debug_text text="'Checking gravidar for enemies'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        <find_gravidar_contact groupname="$targets" functional="true" multiple="true" object="this.ship">
+          <match_relation object="this.ship" relation="enemy" comparison="le"/>
+        </find_gravidar_contact>
+      </do_if>
+      <!-- if we *still* have no enemies, and are escorting something, see if there are enemies of any of them around -->
+      <do_if value="$targets.count == 0 and @$escortees.count">
+        <do_all exact="$escortees.count" counter="$i">
+          <debug_text text="'Checking gravidar for enemies to escortee ' + $i + ': ' + $escortees.{$i}.knownname" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+          <find_gravidar_contact groupname="$targets" object="this.ship" functional="true" multiple="true">
+            <match_relation object="$escortees.{$i}" relation="enemy" comparison="le"/>
+          </find_gravidar_contact>
+          <do_if value="$targets.count">
+            <break />
+          </do_if>
+          <wait min="200ms" max="500ms" sinceversion="1" />
+        </do_all>
+      </do_if>
+
+      <!-- Clear non-enemies targets -->
+      <!-- abort if the target no longer is an enemy or is docked-->
+      <do_all exact="$targets.count" counter="$i" reverse="true">
+        <do_if value="not this.hasrelation.enemy.{$targets.{$i}} or @$targets.{$i}.dockslot">
+          <remove_from_group group="$targets" object="$targets.{$i}" />
+        </do_if>
+      </do_all>
+
+      <!-- if target list is still empty, exit script (caller should handle 'peace time')-->
+      <do_if value="$targets.count == 0">
+        <debug_text text="'No enemies. Resuming previous task.'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        <resume label="finish" />
+      </do_if>
+      <debug_text text="'Found ' + $targets.count + ' enemies'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+      <set_value name="$selected" exact="0" />
+      <set_value name="$highest" exact="-1" />
+      <do_all exact="$targets.count" counter="$i">
+        <do_if value="not $targets.{$i}.isoperational">
+          <continue />
+        </do_if>
+        <do_if value="not $pursuetargets and $targets.{$i}.zone != this.ship.zone">
+          <continue />
+        </do_if>
+        <set_value name="$priority" exact="0" />
+        <!-- prioritize targets by certain conditions -->
+        <do_if value="$targets.{$i} == $target">
+          <!-- is the current target (prioritize higher to prevent frequent switching) -->
+          <set_value name="$priority" exact="$priority + 10" />
+        </do_if>
+        <!-- distance to this ship -->
+        <set_value name="$distance" exact="$targets.{$i}.distanceto.{this.ship}" />
+        <!-- add priority linearly between min and max distance -->
+        <do_if value="$distance lt 5500">
+          <do_if value="$distance gt 500">
+            <set_value name="$priority" exact="$priority + ($distance - 500) / 500" />
+          </do_if>
+          <do_else>
+            <set_value name="$priority" exact="$priority + 10" />
+          </do_else>
+        </do_if>
+        <!-- closest distance to any escortee, if there are any -->
+        <do_if value="@$escortees.count">
+          <do_all exact="$escortees.count" counter="$j">
+            <set_value name="$distance" exact="$targets.{$i}.distanceto.{$escortees.{$j}}" />
+            <!-- add priority linearly between min and max distance -->
+            <do_if value="$distance lt 5500">
+              <do_if value="$distance gt 500">
+                <set_value name="$priority" exact="$priority + ($distance - 500)f / 500" />
+              </do_if>
+              <do_else>
+                <set_value name="$priority" exact="$priority + 10" />
+              </do_else>
+            </do_if>
+          </do_all>
+        </do_if>
+        <!-- faction relation to this ship and escortees (the lower the combined relation, the higher the priority) -->
+        <set_value name="$priority" exact="$priority - ($targets.{$i}.relationto.{this.ship}) * 5" />
+        <do_if value="@$escortees.count">
+          <do_all exact="$escortees.count" counter="$j">
+            <set_value name="$priority" exact="$priority - ($targets.{$i}.relationto.{$escortees.{$j}}) * 5" />
+          </do_all>
+        </do_if>
+        <!-- damage potential vs. time to destroy -->
+        <do_if value="($targets.{$i}.hull + $targets.{$i}.shield) gt 0">
+          <do_if value="@$targets.{$i}.dps.all">
+            <set_value name="$priority" exact="$priority + 10 * ($targets.{$i}.dps.all)f / ($targets.{$i}.hull + $targets.{$i}.shield)f" />
+          </do_if>
+        </do_if>
+        <!-- random additional value -->
+        <set_value name="$priority" min="$priority" max="$priority + 5" />
+        <!-- TODO: recent damage against this ship, an escortee or allies -->
+        <!-- TODO: evaluate fight/flight by comparing combined enemy strength to combined allied strength? -->
+        <do_if value="$priority gt $highest">
+          <set_value name="$highest" exact="$priority" />
+          <set_value name="$selected" exact="$i" />
+        </do_if>
+      </do_all>
+      <do_if value="$selected == 0">
+        <!-- no valid targets left -->
+        <resume label="finish" />
+      </do_if>
+      <do_if value="$targets.{$selected} != $target">
+        <set_value name="$target" exact="$targets.{$selected}" />
+        <debug_text text="this.ship.knownname + ' of faction ' + this.owner.knownname + ' changed target to: ' + $target.knownname + '('+ $target +')' + ' of faction ' + $target.owner.knownname" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        <!-- make sure our wingmen all attack the selected target -->
+        <do_all exact="this.ship.subordinates.count" counter="$i">
+          <do_if value="this.ship.subordinates.{$i}.isoperational">
+            <set_value name="this.ship.subordinates.{$i}.pilot.$attacktarget" exact="$target" />
+          </do_if>
+        </do_all>
+        <!-- <stop_moving object="this.ship"/> -->
+      </do_if>
+      <set_value name="this.$subordinatetarget" exact="$target" />
+      <set_value name="this.$subordinateextratargets" exact="$targets" />
+
+      <set_value name="$nexttargetselecttime" exact="player.age + 10" />
+      <set_flight_behaviour object="this.ship" flightbehaviour="flightbehaviour.default" />
+
+      <label name="fighttarget" />
+
+      <!-- Checking for big targets -->
+      <set_value name="$BigTarget" exact="false" />
+      <!-- check for station/ship components -->
+      <do_if value="$target.isoperational">
+        <do_if value="$target.container.exists">
+          <do_if value="$target.container.isclass.ship_l or $target.container.isclass.ship_xl or $target.container.isclass.station">
+            <set_value name="$BigTarget" exact="true" />
+          </do_if>
+        </do_if>
+        <!-- For stations, l,xl ships and Stations -->
+        <do_if value="$target.isclass.ship_l or $target.isclass.ship_xl or $target.isclass.station" >
+          <set_value name="$BigTarget" exact="true" />
+        </do_if>
+      </do_if>
+
+      <!-- Run an external script for Big targets-->
+      <do_if value="$BigTarget">
+        <debug_text text="'BIG TARGET!!'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        <run_script name="'fight.attack.object.fighter.bigtarget'" sinceversion="1">
+          <param name="target" value="$target" />
+          <param name="allowothertargets" value="$allowothertargets" />
+          <param name="debugoutputchance" value="100 * ($iDebugLevel ge 3)" />
+        </run_script>
+        <resume label="selecttarget" />
+      </do_if>
+
+      <!-- Setting shooting and flight values  -->
+      <set_value name="$ToleranceWeapon1" exact="7.0deg" />
+      <set_value name="$ToleranceWeapon2" exact="5.0deg" />
+      <select_flight_behaviour entity="this" evasive="false" result="$Behaviour" />
+      <set_value name="$MinGainDistance"  exact="700m" />
+      <set_value name="$MaxGainDistance"  exact="1400m" />
+      <!-- If has missiles, set an initial delay -->
+      <set_value name="$delaymissiles" exact="-1"/>
+      <do_if value="this.ship.dps.secondary gt 0">
+        <set_value name="$delaymissiles" min="player.age + 5s" max="player.age + 25s" />
+      </do_if>
+
+      <!-- repeat until target is dead (or we are) -->
+      <do_while value="$target.isoperational">
+        <do_if value="this.$bUFO_Disengage">
+          <resume label="finish" />
+        </do_if>
+
+        <!-- More possible enemies -->
+        <find_gravidar_contact name="$additionaltargets" object="this.ship" functional="true" multiple="true">
+          <match_relation object="this.ship" relation="enemy" comparison="le"/>
+          <match_distance max="5km" object="this.ship" />
+        </find_gravidar_contact>
+        <!-- if it has turrets, use them -->
+        <set_turret_targets object="this.ship" target="$additionaltargets" preferredtarget="$target" weapontype="combat"/>
+
+        <!-- BEGIN FIGHT MOVEMENT -->
+        <!-- 
+            1. fly towards the target
+            2. this script is meant for fighters, so don't do any drastic speed changes
+            3. if we get too close, veer off, preferably in the direction we're going to minimize turns
+            4. repeat
+        -->
+
+        <set_value name="$doevade" exact="false" />
+
+        <do_while value="$target.isoperational">
+
+
+          <!-- abort if the target no longer is an enemy or is docked-->
+          <do_if value="not this.hasrelation.enemy.{$target} or @$target.dockslot">
+            <debug_text text="this.ship.knownname + ' is not enemy to ' + $target.knownname" filter="error" chance="100 * ($iDebugLevel ge 3)"/>
+            <break />
+          </do_if>
+
+          <!-- Decide weapons to Fire -->
+          <do_if value="$delaymissiles gt 0 and player.age gt $delaymissiles">
+            <do_if value="true" chance="70">
+              <shoot_at object="this.ship" target="$target" additional_targets="$additionaltargets" slot="tag.primary_slot" tolerance="$ToleranceWeapon1" locktarget="true" weapontype="combat" />
+              <stop_shooting object="this.ship" slot="tag.secondary_slot" />
+            </do_if>
+            <do_else>
+              <shoot_at object="this.ship" target="$target" additional_targets="$additionaltargets" slot="tag.secondary_slot" tolerance="$ToleranceWeapon2" locktarget="true" weapontype="combat" />
+              <stop_shooting object="this.ship" slot="tag.primary_slot" />
+            </do_else>
+          </do_if>
+          <do_else>
+            <shoot_at object="this.ship" target="$target" additional_targets="$additionaltargets" slot="tag.primary_slot" tolerance="$ToleranceWeapon1" locktarget="true" weapontype="combat" />
+          </do_else>
+
+          <!-- do a simple attack run -->
+          <select_flight_behaviour entity="this" evasive="false" result="$Behaviour" />
+          <debug_text text="'start attack run. D=' + this.ship.distanceto.{$target} + ' .Behaviour: '+ $Behaviour " filter="error" chance="0" />
+          <move_to object="this.ship" destination="$target" flightbehaviour="$Behaviour" forcesteering="true" >
+            <interrupt>
+              <conditions>
+                <check_any>
+                  <event_object_destroyed object="$target" />
+                  <event_object_changed_zone group="$escortees" />
+                </check_any>
+              </conditions>
+            </interrupt>
+          </move_to>
+
+          <!-- Block the interrupt.attacked handler, for enable the attack events in this case (evade maneuvers) -->
+          <set_value name="this.$BlockInterruptAttacked"  exact="true"/>
+          <!-- try to gain distance for a new attack run -->
+          <set_value name="$gaindistancetimeout" exact="player.age + 30s" />
+          <do_while value="$target.isoperational and $gaindistancetimeout gt player.age">
+            <do_if value="this.$bUFO_Disengage">
+              <resume label="finish" />
+            </do_if>
+
+            <move_to object="this.ship" destination="$target" flightbehaviour="flightbehaviour.gaindistance" forcesteering="true" >
+              <interrupt_after_time time="500ms" />
+              <interrupt>
+                <conditions>
+                  <check_any>
+                    <event_object_changed_zone group="$escortees" />
+                    <event_object_attacked object="this.ship" />
+                  </check_any>
+                  <check_value value="event.param" exact="this.ship" negate="true" />
+                </conditions>
+                <actions>
+                  <do_if value="event.name == 'event_object_attacked'">
+                    <set_value name="$doevade" exact="true" />
+                  </do_if>
+                </actions>
+              </interrupt>
+            </move_to>
+
+            <do_if value="not $target.isoperational">
+              <break />
+            </do_if>
+            <do_if value="$doevade">
+              <break />
+            </do_if>
+            <is_in_quadrant object="$target" target="this.ship" front="true" result="$beingfollowed" />
+            <do_if value="not $beingfollowed">
+              <do_if value="this.ship.distanceto.{$target} gt $MinGainDistance">
+                <debug_text text="'target is not facing us. D=' + this.ship.distanceto.{$target}" filter="error" chance="0" />
+                <break />
+              </do_if>
+            </do_if>
+            <do_elseif value="this.ship.distanceto.{$target} gt $MaxGainDistance">
+              <break />
+            </do_elseif>
+
+          </do_while>
+          
+          <do_if value="this.$bUFO_Disengage">
+            <resume label="finish" />
+          </do_if>
+
+          <do_if value="$doevade and $target.isoperational">
+            <!-- evasive maneuver -->
+            <debug_text text="'evasive maneuver!'" filter="error" chance="0" />
+
+            <!-- try different moves -->
+            <do_while value="$doevade">
+              <set_value name="$doevade" exact="false" />
+              <set_value name="$minevadedelay" exact="player.age + 3s" />
+              <set_value name="$maxevadedelay" exact="20s" />
+
+              <select_flight_behaviour entity="this" evasive="true" result="$fb" />
+              <debug_text text="this.knownname + ': EVADE using '+ $fb + ' behaviour!.' + 'time: ' + player.age" filter="error" chance="0" />
+
+              <move_to object="this.ship" destination="this.ship.zone" flightbehaviour="$fb" forcesteering="true">
+                <position object="this.ship" min="500m" max="1km"/>
+                <interrupt_after_time time="$maxevadedelay"/>
+                <interrupt>
+                  <conditions>
+                    <check_all>
+                      <event_object_attacked object="this.ship" />
+                      <check_age min="$minevadedelay"/>
+                    </check_all>
+                  </conditions>
+                  <actions>
+                    <set_value name="$doevade" exact="true" />
+                  </actions>
+                </interrupt>
+              </move_to>
+
+            </do_while>
+          </do_if>
+
+          <!-- Unblock the interrupt.attacked handler -->
+          <set_value name="this.$BlockInterruptAttacked"  exact="false"/>
+
+          <wait min="250ms" max="1s" sinceversion="1" />
+          <move_to object="null" destination="null" chance="0" sinceversion="0" comment="for version compatibility" />
+
+        </do_while>
+
+        <debug_text text="'Destroyed enemy: %1'.[$target.name]" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+
+        <do_if value="$primarytargets.list.indexof.{$target}">
+          <debug_text text="'Destroyed enemy: %1'.[$target.name]" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+        </do_if>
+
+        <!-- 
+        <remove_from_group group="$primarytargets" object="$target"/>
+        <do_if value="@$secondarytargets.exists">
+          <remove_from_group group="$secondarytargets" object="$target" />
+        </do_if>
+         -->
+
+        <!-- END FIGHT MOVEMENT -->
+
+        <do_if value="player.age gt $nexttargetselecttime">
+          <stop_shooting object="this.ship" slot="tag.primary_slot" />
+          <stop_shooting object="this.ship" slot="tag.secondary_slot" />
+          <resume label="selecttarget" />
+        </do_if>
+
+        <run_script name="'move.idle'" sinceversion="1">
+          <param name="TimeOut" value="7s" />
+        </run_script>
+
+      </do_while>
+      <resume label="selecttarget" />
+
+      <label name="finish" />
+      <debug_text text="'No more targets to be found'" filter="error" chance="100 * ($iDebugLevel ge 3)" />
+      <set_flight_behaviour object="this.ship" flightbehaviour="flightbehaviour.default" />
+      <stop_shooting object="this.ship" slot="tag.primary_slot" />
+      <stop_shooting object="this.ship" slot="tag.secondary_slot" />
+      <set_to_default_flight_control_model object="this.ship" />
+      <stop_moving object="this.ship" comment="this should be after 'set_to_default_flight_control_model', otherwise ship will stop immediately" />
+
+      <wait chance="0" sinceversion="0" comment="for version compatibility" />
+      <run_script name="null" chance="0" sinceversion="0" comment="for version compatibility" />
+
+    </actions>
+  </attention>
+  <attention min="unknown">
+    <actions>
+      <set_value name="$currenttarget" exact="null" />
+      <set_value name="$target" exact="null" />
+      <set_value name="$leader" exact="null" />
+      <set_value name="$nextammocheck" exact="player.age + 100s" />
+      <create_group groupname="$targets" />
+
+      <label name="selecttarget" />
+      <!-- if primary/secondary targets set, set them as the target list -->
+      <do_if value="@$primarytargets.count">
+        <debug_text text="'Primary targets found, choosing one of them'" chance="100 * ($iDebugLevel ge 3)" />
+        <add_to_group groupname="$targets" group="$primarytargets" />
+      </do_if>
+      <do_elseif value="@$secondarytargets.count">
+        <debug_text text="'Secondary targets found, choosing one of them'" chance="100 * ($iDebugLevel ge 3)" />
+        <add_to_group groupname="$targets" group="$secondarytargets" />
+      </do_elseif>
+      <do_elseif value="not $allowothertargets">
+        <debug_text text="'No more intact primary or secondary targets found, choosing other targets not allowed'" chance="100 * ($iDebugLevel ge 3)" />
+        <resume label="finish" />
+      </do_elseif>
+      <!-- else, if target set on blackboard, add it to the target group -->
+      <do_if value="$targets.count == 0">
+        <debug_text text="'Checking blackboard for a target object'" chance="100 * ($iDebugLevel ge 3)" />
+        <do_if value="@this.$attacktarget.isoperational">
+          <add_to_group groupname="$targets" object="this.$attacktarget" />
+        </do_if>
+      </do_if>
+      <!-- else, use enemy gravidar contacts as the target list -->
+      <do_if value="$targets.count == 0">
+        <debug_text text="'Checking gravidar for enemies'" chance="100 * ($iDebugLevel ge 3)" />
+        <find_gravidar_contact groupname="$targets" functional="true" multiple="true" object="this.ship">
+          <match_relation object="this.ship" relation="enemy" comparison="le"/>
+        </find_gravidar_contact>
+      </do_if>
+      <!-- if we *still* have no enemies, and are escorting something, see if there are enemies of any of them around -->
+      <do_if value="$targets.count == 0 and @$escortees.count">
+        <do_all exact="$escortees.count" counter="$i">
+          <debug_text text="'Checking gravidar for enemies to escortee ' + $i + ': ' + $escortees.{$i}.knownname" chance="100 * ($iDebugLevel ge 3)" />
+          <find_gravidar_contact groupname="$targets" object="this.ship" functional="true" multiple="true">
+            <match_relation object="$escortees.{$i}" relation="enemy" comparison="le"/>
+          </find_gravidar_contact>
+          <do_if value="$targets.count">
+            <break />
+          </do_if>
+          <wait min="200ms" max="500ms" />
+        </do_all>
+      </do_if>
+      <!-- if target list is still empty, exit script (caller should handle 'peace time')-->
+      <do_if value="$targets.count == 0">
+        <resume label="finish" />
+      </do_if>
+      <debug_text text="'Found ' + $targets.count + ' enemies'" chance="100 * ($iDebugLevel ge 3)" />
+      <set_value name="$selected" exact="0" />
+      <set_value name="$highest" exact="-1" />
+      <do_all exact="$targets.count" counter="$i">
+        <do_if value="not $targets.{$i}.isoperational">
+          <continue />
+        </do_if>
+        <do_if value="not $pursuetargets and $targets.{$i}.zone != this.ship.zone">
+          <continue />
+        </do_if>
+        <set_value name="$priority" exact="0" />
+        <!-- prioritize targets by certain conditions -->
+        <do_if value="$targets.{$i} == $target">
+          <!-- is the current target (prioritize higher to prevent frequent switching) -->
+          <set_value name="$priority" exact="$priority + 10" />
+        </do_if>
+        <!-- distance to this ship -->
+        <set_value name="$distance" exact="$targets.{$i}.distanceto.{this.ship}" />
+        <!-- add priority linearly between min and max distance -->
+        <do_if value="$distance lt 5500">
+          <do_if value="$distance gt 500">
+            <set_value name="$priority" exact="$priority + ($distance - 500) / 500" />
+          </do_if>
+          <do_else>
+            <set_value name="$priority" exact="$priority + 10" />
+          </do_else>
+        </do_if>
+        <!-- closest distance to any escortee, if there are any -->
+        <do_if value="@$escortees.count">
+          <do_all exact="$escortees.count" counter="$j">
+            <set_value name="$distance" exact="$targets.{$i}.distanceto.{$escortees.{$j}}" />
+            <!-- add priority linearly between min and max distance -->
+            <do_if value="$distance lt 5500">
+              <do_if value="$distance gt 500">
+                <set_value name="$priority" exact="$priority + ($distance - 500)f / 500" />
+              </do_if>
+              <do_else>
+                <set_value name="$priority" exact="$priority + 10" />
+              </do_else>
+            </do_if>
+          </do_all>
+        </do_if>
+        <!-- faction relation to this ship and escortees (the lower the combined relation, the higher the priority) -->
+        <set_value name="$priority" exact="$priority - ($targets.{$i}.relationto.{this.ship}) * 5" />
+        <do_if value="@$escortees.count">
+          <do_all exact="$escortees.count" counter="$j">
+            <set_value name="$priority" exact="$priority - ($targets.{$i}.relationto.{$escortees.{$j}}) * 5" />
+          </do_all>
+        </do_if>
+        <!-- damage potential vs. time to destroy -->
+        <do_if value="($targets.{$i}.hull + $targets.{$i}.shield) gt 0">
+          <do_if value="@$targets.{$i}.dps.all">
+            <set_value name="$priority" exact="$priority + 10 * ($targets.{$i}.dps.all)f / ($targets.{$i}.hull + $targets.{$i}.shield)f" />
+          </do_if>
+        </do_if>
+        <!-- random additional value -->
+        <set_value name="$priority" min="$priority" max="$priority + 5" />
+        <!-- TODO: recent damage against this ship, an escortee or allies -->
+        <!-- TODO: evaluate fight/flight by comparing combined enemy strength to combined allied strength? -->
+        <do_if value="$priority gt $highest">
+          <set_value name="$highest" exact="$priority" />
+          <set_value name="$selected" exact="$i" />
+        </do_if>
+      </do_all>
+      <do_if value="$selected == 0">
+        <!-- no valid targets left -->
+        <resume label="finish" />
+      </do_if>
+      <do_if value="$targets.{$selected} != $target">
+        <set_value name="$target" exact="$targets.{$selected}" />
+        <debug_text text="'Changed target to: ' + $target.knownname" chance="100 * ($iDebugLevel ge 3)" />
+        <!-- make sure our wingmen all attack the selected target -->
+        <do_all exact="this.ship.subordinates.count" counter="$i">
+          <do_if value="this.ship.subordinates.{$i}.isoperational">
+            <set_value name="this.ship.subordinates.{$i}.pilot.$attacktarget" exact="$target" />
+          </do_if>
+        </do_all>
+        <!-- <stop_moving object="this.ship"/> -->
+      </do_if>
+      <set_value name="this.$subordinatetarget" exact="$target" />
+      <set_value name="this.$subordinateextratargets" exact="$targets" />
+
+      <set_value name="$nexttargetselecttime" exact="player.age + 10" />
+
+      <!-- OOS: NOT CHECKING FOR BIG TARGETS -->
+
+      <!-- Setting shooting and flight values  -->
+      <set_value name="$ToleranceWeapon1" exact="7.0deg" />
+      <set_value name="$ToleranceWeapon2" exact="5.0deg" />
+      <select_flight_behaviour entity="this" evasive="false" result="$Behaviour" />
+      <set_value name="$MinGainDistance"  exact="700m" />
+      <set_value name="$MaxGainDistance"  exact="1400m" />
+
+
+      <label name="fighttarget" />
+
+      <do_if value="$target == player.primaryship">
+        <set_value name="$target" exact="null" />
+        <wait min="10s" max="2min" profile="decreasing" />
+        <resume label="selecttarget" />
+      </do_if>
+
+      <!-- ammo check -->
+      <do_if value="player.age gt @$nextammocheck">
+        <set_value name="$ammodelay" min="8min" max="12min" />
+        <set_value name="$nextammocheck" exact="player.age + $ammodelay" />
+
+        <run_script name="'lib.ammo.missiles'" result="$needammo" sinceversion="2">
+          <save_retval name="macros" variable="$order_macrolist" />
+          <save_retval name="amounts" variable="$order_amountlist" />
+        </run_script>
+
+        <do_if value="$needammo">
+          <do_all exact="$order_macrolist.count" counter="$i">
+            <add_ammo object="this.ship" macro="$order_macrolist.{$i}" amount="$order_amountlist.{$i}" />
+          </do_all>
+        </do_if>
+
+        <remove_value name="$order_macrolist" />
+        <remove_value name="$order_amountlist" />
+      </do_if>
+
+      <set_value name="$isdead" exact="0" />
+      <set_value name="$attacktime" exact="player.age + 10min" />
+      <!-- repeat until target is dead (or we are) -->
+      <do_while value="$target.isoperational and not $isdead" >
+
+        <!-- Search/Attacking wait time -->
+        <wait min="500ms" max="5s" profile="flat" />
+        <!-- Attacking 1-5 seconds -->
+        <do_all min="0" max="7" profile="flat" comment="chance of fail and attack" >
+          <wait exact="1s" comment="dps-> every second makes damage" />
+          <!-- Get and apply strengths-->
+          <do_if value="$target.isoperational and not $isdead">
+            <!-- do not attack objects that are too far away, gravidar range can be 20km+ !! -->
+            <do_if value="this.ship.distanceto.{$target} lt 3km" >
+              <!-- get strength of the next attack -->
+              <get_attackstrength object="this.ship" target="$target" result="$result" />
+              <!-- Check for ships of player (DISABLED FOR SMALL FIGHTERS)-->
+              <do_if value="$target.isplayerowned" chance="0">
+                <do_if value="$target.hull lt $target.maxhull*0.1">
+                  <!-- Signal to warning about a player´s ship under attack -->
+                  <signal_objects object="$target" param="'ShipOwnedAttacked'" param2="$target" param3="$target" />
+                  <!-- <wait exact="1min" comment="wait to give a chance to the player (not fair for NPC)"/> -->
+                </do_if>
+              </do_if>
+              <!-- Apply the attack strength -->
+              <apply_attackstrength object="$target" attacker="this.ship" strength="$result" result="$isdead"/>
+              <debug_text text="'%1 OOS. Apply strength of %2 against %3 is: %4(%5|%6). Is killed: %7'.[player.age,this.ship.knownname,$target.knownname,$result,$target.hull,$target.shield,$isdead]" chance="100 * ($iDebugLevel ge 3)" />
+            </do_if>
+          </do_if>
+        </do_all>
+        <!-- New simulated run attack.  -->
+        <!-- <do_if value="$target.isoperational and not $isdead"> -->
+        <wait min="10s" max="2min" profile="flat" />
+        <!-- </do_if> -->
+        <!-- Avoid an infite loop-->
+        <do_if value="player.age" min="$attacktime">
+          <break/>
+        </do_if>
+      </do_while>
+
+      <wait exact="100ms" />
+      <resume label="selecttarget" />
+
+      <label name="finish" />
+      
+      <!-- In case we exited because we needed to warp, we have to do some more checking -->
+      <do_if value="this.$bUFO_WarpToTarget">
+        <!-- 
+              We check our distance to our target. We keep following unless we are 
+              more than 10km away, or the target switched into a highway. We also disable
+              the distance check should we have followed the target into its zone.
+              
+              This check exists to catch cases of in-space zone changes. As of version 1.17
+              there exists a bug, where two ships are not considered in the same zone,
+              even though they are right next to each other, therefore we have to continue
+              this kind of following until an actual zone change occurs.
+            -->
+        <do_while value="true">
+          <!-- TODO: clean up bad use of escortees -->
+          <do_if value="this.ship.distanceto.{$escortees.{1}} gt 10km or this.ship.zone == $escortees.{1}.zone or $escortees.{1}.zone.isclass.highway">
+            <break />
+          </do_if>
+
+          <!-- While waiting for the warp, we gain distance to simulate disengaging in case there were enemies -->
+          <move_to object="this.ship" destination="this.ship.zone" flightbehaviour="flightbehaviour.gaindistance" forcesteering="true" >
+            <interrupt_after_time time="1s" />
+          </move_to>
+        </do_while>
+
+        <!-- If we followed into the zone, we can engage enemies again -->
+        <do_if value="this.ship.zone == $escortees.{1}.zone">
+          <resume label="selecttarget" />
+        </do_if>
+      </do_if>
+      
+      <debug_text text="'No more targets to be found'" chance="100 * ($iDebugLevel ge 3)" />
+
+    </actions>
+  </attention>
+</aiscript>

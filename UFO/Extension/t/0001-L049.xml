@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.4.3 Beta
+	Date: 25th Dec 2013
+  
+  X Rebirth version: 1.21
+-->
+
+<diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="rfc5261.xsd">
+  <add sel="/language">
+    <page id="99998" title="UFO" descr="Text for UFO mod." voice="no">
+      <t id="1">Flotten verwalten</t>
+      <t id="2">Kommandant zuweisen</t>
+      <t id="3">Wähle 1 oder mehr Untergeordnete(label used for help text during selection)</t>
+      <t id="4">Wähle Kommandanten(label used for help text during selection)</t>
+      <t id="5">Befehl erhalten</t>
+      <t id="6">Untergeordneter(label used in order confirmation)</t>
+      <t id="7">Kommandant(label used in order confirmation)</t>
+      <t id="8">Kann nicht Unterg. zuweisen(label used to prevent cyclic dependencies)</t>
+      <t id="9">Braucht Verteidigungs-Offizier(label used for capital ships that don't have defence officers)</t>
+      <t id="10">Nicht verfügbar wenn dedockt(used to indicate fleet management cannot be done while docked yet)</t>
+      <t id="11">Haltungsanw. senden(menu item label)</t>
+      <t id="12">Folgen(peaceful follow order)</t>
+      <t id="13">Defensiv(passive escort order)</t>
+      <t id="14">Defensiv \(Nicht verf.\)(label used to indicate that captains should not break formation when detecting enemies)</t>
+      <t id="15">Offensiv(aggressive escort order)</t>
+      <t id="16">Offensiv \(Nicht verf.\)(label used to indicate that captains should not break formation when detecting enemies)</t>
+      <t id="17">Wähle einen Kommandant für den Befehl(help text for order broadcasting)</t>
+      <t id="18">Bestätigt: %1</t>>
+      <t id="19">Gib Haltungsanw.(menu item label)</t>
+      <t id="20">Flotten-Bericht(menu item label to show all stances for all NPCs in the player's fleet)</t>
+      <t id="21">Aktive Haltungsanweisungen(notification caption)</t>
+      <t id="22">kein %1(label used to indicate that a certain NPC type is needed)</t>
+      <t id="23">Wähle die maximale Feind-Angriffsreichweite(help text for engagement distance selection)</t>
+      <t id="24">Keine Flotten entdeckt(notification text for fleet report if no fleets exist)</t>
+      <t id="25">Echtzeit Flotten-Statusreport(notification caption for fleet status reports)</t>
+      <t id="26">führt %1 Schiff\(e\)(text for fleet status reports)</t>
+      <t id="27">%1 grosse\(s\) Schiff\(e\)(text for fleet status reports)</t>
+      <t id="28">%1 kleine\(s\) Schiff\(e\)(text for fleet status reports)</t>
+      <t id="29">hat %1 Feind\(e\) entdeckt(text for fleet status reports)</t>
+      <t id="30">in Zone %1(text for fleet status reports)</t>
+      <t id="31">Greift feindliche Schiffe an(text for fleet status reports)</t>
+      <t id="32">Flotten-Befehle(menu item label for fleet commands section)</t>
+      <t id="33">Zone angreifen(menu item label for fleet command to attack a zone)</t>
+      <t id="34">Wähle Kommandant um den Befehl auszuführen(help text for fleet commands)</t>
+      <t id="35">führt Befehl aus(text for 'attack zone' ack notification)</t>
+      <t id="36">Von Kommandant entfernen(menu item label for removing a ship from a fleet)</t>
+      <t id="999">Nicht unterstützt(label used in case player is trying to assign fighter to capital ship)</t>
+      <t id="9995">UFO V%1 wurde erfolgreich deinstalliert.\nBitte speichere das Spiel, schliesse Rebirth, lösche den UFO Ordner aus dem extensions Ordner, und dann lade und speichere das Spiel.</t>
+      <t id="9996">Bitte beachte, dass die zur Zeit installierte UFO Version eine experimentelle Version ist. Sollten dir Bugs auffallen, bitte melde sie im Egosoft Forum oder auf dem Nexus.</t>
+      <t id="9997">Installiere UFO V%1...</t>
+      <t id="9998">UFO update entdeckt: V%1 -> V%2\nBitte Spiel speichern \(in neuem Slot\) und neu laden.</t>
+      <t id="9999">Aktualisierte UFO Konfiguration gefunden....Erfolgreich aktualisiert!</t>
+    </page>
+  </add>
+</diff>

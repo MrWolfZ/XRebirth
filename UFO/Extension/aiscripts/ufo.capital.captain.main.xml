@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.5.0 Beta
+	Date: 26th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<!--
+  This script should only be run on entities of type commander that 
+  are currently piloting a ship of size l or larger.
+  
+  The main script for captains in UFO fleets.
+-->
+<aiscript name="ufo.capital.captain.main" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <param name="oEscortTarget" default="null" />
+  </params>
+  <interrupts>
+    <!-- Handler used to update the parameters under which this entity works -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="this.ship" param="'UFO_UpdateState'" />
+      </conditions>
+      <actions>
+        <debug_text text="$sLogFormat.[player.age,'Received update state request. Updating...']" filter="error" chance="$iLogInfo" />
+
+        <!-- Set all state variables -->
+        <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+        <set_value name="$sAggressionLevel" exact="this.$UFO.$sAggressionLevel" />
+        <set_value name="$sFormationMode" exact="this.$UFO.$sFormationMode" />
+        <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+        <!-- The maximum distance we may be away from our target before we abort pursuing enemies -->
+        <set_value name="$mAbortDist" exact="$mEngageDist + 5km" />
+        <!-- TODO: make max short distance dependent on navigation skill -->
+        <set_value name="$mShortDistMax" exact="$mMaxDist * 1.5" />
+        <set_value name="$mTargetDistMax" exact="$mMaxDist - ($mMaxDist / 4)" />
+        <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+      </actions>
+    </handler>
+    <!-- Handler for updating debug level parameters -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="player.primaryship" param="'UFO_UpdateDebugLevel'" />
+      </conditions>
+      <actions>
+        <set_value name="$iLogError" exact="100 * (global.$UFO.$iDebugLevel ge 0)" />
+        <set_value name="$iLogInfo" exact="100 * (global.$UFO.$iDebugLevel ge 1)" />
+        <set_value name="$iLogFine" exact="100 * (global.$UFO.$iDebugLevel ge 2)" />
+        <set_value name="$iLogFinest" exact="100 * (global.$UFO.$iDebugLevel ge 3)" />
+      </actions>
+    </handler>
+  </interrupts>
+  <init>
+    <do_if value="this.ship != this.$UFO.$Fleet.$oCommander">
+      <set_command command="command.follow" param="this.$UFO.$Fleet.$oCommander" />
+      <do_if value="this.$UFO.$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sAggressive">
+        <set_command command="command.escort" param="this.$UFO.$Fleet.$oCommander" />
+      </do_if>
+    </do_if>
+  </init>
+  <attention min="unknown">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+
+      <!-- First, we do some parameter sanity checking -->
+      <do_if value="this.type != entitytype.commander or not [class.ship_l,class.ship_xl].indexof.{this.ship.class}">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities of type commander that are currently piloting a ship of size l or larger']" />
+        <return />
+      </do_if>
+      <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+        <return />
+      </do_if>
+
+      <!-- We remove the stock commander -->
+      <remove_object_commander object="this.ship" />
+
+      <!-- Set all state variables -->
+      <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+      <set_value name="$sAggressionLevel" exact="this.$UFO.$sAggressionLevel" />
+      <set_value name="$sFormationMode" exact="this.$UFO.$sFormationMode" />
+      <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+      <!-- The maximum distance we may be away from our target before we abort pursuing enemies -->
+      <set_value name="$mAbortDist" exact="$mEngageDist + 5km" />
+      <!-- The minimum distance we should keep from the target -->
+      <set_value name="$mMinDist" exact="this.ship.size" />
+      <!-- The maximum distance we allow the target to be away before we start following -->
+      <set_value name="$mMaxDist" exact="this.ship.size * 2" />
+      <!-- TODO: make max short distance dependent on navigation skill? -->
+      <set_value name="$mShortDistMax" exact="$mMaxDist * 1.5" />
+      <set_value name="$mTargetDistMax" exact="$mMaxDist - ($mMaxDist / 4)" />
+      <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+
+      <!-- We also check if an escort target was set, in which case we follow that instead of the commander -->
+      <do_if value="$oEscortTarget != null and $oEscortTarget.exists and $oEscortTarget.isoperational">
+        <set_value name="$oCommander" exact="$oEscortTarget" />
+      </do_if>
+
+      <debug_text text="$sLogFormat.[player.age,'Started main captain script. Fleet ID: %1, aggression level: %2, formation mode: %3, engagement distance: %4'.[$Fleet.$iId, $sAggressionLevel, $sFormationMode, $mEngageDist]]" filter="error" chance="$iLogInfo" />
+
+      <!-- Setting up some variables -->
+      <set_value name="$iInSectorJumpFailCount" exact="0" />
+      <set_value name="$iLastSpeed" exact="1" />
+      <set_value name="$bBoosting" exact="false" />
+
+      <get_safe_pos result="$oTargetPos" zone="$oCommander.zone" space="$oCommander.zone" radius="this.ship.size" object="$oCommander" min="$mMinDist" max="$mTargetDistMax" />
+
+      <!-- undock in case we were docked -->
+      <run_script name="'move.undock'" sinceversion="1" />
+
+      <!-- Use while loop since goto is evil -->
+      <do_while value="$oCommander.exists and $oCommander.isoperational">
+
+        <set_value name="$mDist" exact="this.ship.distanceto.{$oCommander}" />
+
+        <!-- Check base conditions for engaging enemies -->
+        <do_if value="$mDist lt $mAbortDist and $sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak">
+          <!-- Then, we run our combat behavior -->
+          <run_script name="'ufo.capital.captain.combat'" result="$bInCombat" sinceversion="1">
+            <param name="bBoosting" value="$bBoosting" />
+          </run_script>
+
+          <!-- If we are still in combat, we need to reset the main loop -->
+          <do_if value="$bInCombat">
+            <!-- This also means, we are not boosting anymore -->
+            <set_value name="$bBoosting" exact="false" />
+            <continue />
+          </do_if>
+        </do_if>
+
+        <!-- TODO: get better position (i.e. not on other side of the ship) -->
+        <!-- If our target changed positions we calculate a new course -->
+        <set_value name="$mTargetDistToCommander" exact="$oCommander.distanceto.{$oTargetPos}" />
+        <do_if value="$mTargetDistToCommander gt $mTargetDistMax">
+          <debug_text text="$sLogFormat.[player.age,'Commander has moved away from current target position (%1m). Obtaining new target position in %2m...'.[$mTargetDistToCommander,$mTargetDistMax]]" filter="error" chance="$iLogFinest" />
+
+          <!-- Get a safe position near our target -->
+          <create_position name="$oTargetPos" space="$oCommander.zone" object="$oCommander" min="$mMinDist" max="$mTargetDistMax" />
+          <!--<get_safe_pos result="$oTargetPos" zone="$oCommander.zone" space="$oCommander.zone" radius="this.ship.size" object="$oCommander" min="$mMinDist" max="$mTargetDistMax" />-->
+          <debug_text text="$sLogFormat.[player.age,'Obtained new target position in distance %1m to commander...'.[$oCommander.distanceto.{$oTargetPos}]]" filter="error" chance="$iLogFinest" />
+
+          <!-- If the new position is farther away than allowed, that means there is no space near our commander -->
+          <do_if value="$oCommander.distanceto.{$oTargetPos} gt $mTargetDistMax">
+            <debug_text text="$sLogFormat.[player.age,'New target position is farther away than allowed (%1m). Waiting, then trying again...'.[$oCommander.distanceto.{$oTargetPos}]]" filter="error" chance="$iLogFinest" />
+            <wait exact="5s" sinceversion="1" />
+            <continue />
+          </do_if>
+
+          <!-- We also stop boosting if we were -->
+          <!--
+          <do_if value="$bBoosting">
+            <debug_text text="$sLogFormat.[player.age,'Stopping boost...']" filter="error" chance="$iLogFinest" />
+            <stop_boost object="this.ship" />
+            <set_value name="$bBoosting" exact="false" />
+            <stop_moving object="this.ship" />
+          </do_if>
+          -->
+        </do_if>
+
+        <!-- Handle short distance to commander -->
+        <do_if value="$mDist lt $mShortDistMax">
+          <set_value name="$iInSectorJumpFailCount" exact="0" />
+
+          <!-- Stop boosting in case we were -->
+          <do_if value="$bBoosting">
+            <debug_text text="$sLogFormat.[player.age,'Stopping boost...']" filter="error" chance="$iLogFinest" />
+            <stop_boost object="this.ship" />
+            <set_value name="$bBoosting" exact="false" />
+            <stop_moving object="this.ship" />
+          </do_if>
+
+          <!-- We only need to move if we are futher away than allowed -->
+          <do_if value="$mDist gt $mMaxDist">
+            <debug_text text="$sLogFormat.[player.age,'Commander \'%1\' is not at proper distance (%2m). Adjusting position...'.[$oCommander.knownname,$mDist]]" filter="error" chance="$iLogFine" />
+
+            <!-- The frequency of distance checks is dependent on navigation skill -->
+            <set_value name="$tSleep" min="3s" max="5s"/>
+            <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)"/>
+            <set_value name="$tSleep" exact="$tSleep + $tOffset" />
+
+            <!-- Move to our target. Also react to enemy activity if necessary -->
+            <move_to object="this.ship" destination="$oCommander.zone" usehighways="false" forceposition="false" forcesteering="true" sinceversion="1" avoid="false" flightbehaviour="flightbehaviour.generic">
+              <position value="$oTargetPos" />
+              <interrupt>
+                <conditions>
+                  <event_object_signalled object="this.ship" param="'UFO_EnemyActivity'" />
+                  <!-- As the captain, we only care for enemy activity, if we are set to break formation -->
+                  <check_value value="$sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak" />
+                </conditions>
+              </interrupt>
+              <!-- We also interrupt after $tSleep to react to any position change by our target -->
+              <interrupt_after_time time="$tSleep" />
+            </move_to>
+          </do_if>
+
+          <!-- Otherwise, we are close and go to idle -->
+          <do_else>
+            <stop_moving object="this.ship" />
+
+            <do_if value="this.ship.speed == 0 and this.ship.speed != $iLastSpeed">
+              <debug_text text="$sLogFormat.[player.age,'Reached parking position near commander \'%1\'. Going to sleep...'.[$oCommander.knownname]]" filter="error" chance="$iLogInfo" />
+              <set_value name="$iLastSpeed" exact="this.ship.speed" />
+            </do_if>
+
+            <!-- Since we are idle, we just sleep -->
+            <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)"/>
+            <wait min="3s + $tOffset" max="5s + $tOffset" sinceversion="1">
+              <interrupt>
+                <conditions>
+                  <event_object_signalled object="$oCommander" param="'UFO_EnemyActivity'" />
+                  <!-- As the captain, we only care for enemy activity, if we are set to break formation -->
+                  <check_value value="$sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak" />
+                </conditions>
+              </interrupt>
+            </wait>
+          </do_else>
+        </do_if>
+
+        <!-- 
+          In case the target is in a highway, we simply wait for the target to exit and 
+          then after a short delay jump to it.
+        -->
+        <do_elseif value="$oCommander.zone.isclass.highway">
+          <debug_text text="$sLogFormat.[player.age,'Commander \'%1\' is moving in highway %2. Waiting for it to exit...'.[$oCommander.knownname,$oCommander.zone.knownname]]" filter="error" chance="$iLogInfo" />
+
+          <!-- Stop boosting in case we were -->
+          <do_if value="$bBoosting">
+            <stop_boost object="this.ship" />
+            <set_value name="$bBoosting" exact="false" />
+          </do_if>
+
+          <stop_moving object="this.ship" />
+
+          <!-- Then we go idle for a short time -->
+          <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)"/>
+          <wait min="3s + $tOffset" max="5s + $tOffset" sinceversion="1">
+            <interrupt>
+              <conditions>
+                <event_object_signalled object="$oCommander" param="'UFO_EnemyActivity'" />
+                <!-- As the captain, we only care for enemy activity, if we are set to break formation -->
+                <check_value value="$sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak" />
+              </conditions>
+            </interrupt>
+          </wait>
+        </do_elseif>
+
+        <!-- If we are in different sectors, we just use the default jump logic -->
+        <do_elseif value="this.ship.sector != $oCommander.sector">
+          <set_value name="$oSector" exact="$oCommander.sector" />
+          <debug_text text="$sLogFormat.[player.age,'Commander \'%1\' is in different sector. Jumping to sector %1...'.[$oCommander.knownname,$oSector.knownname]]" filter="error" chance="$iLogInfo" />
+
+          <!-- We use the stock jump script -->
+          <!-- TODO: use custom script with less side-effects -->
+          <run_script name="'move.jump'" result="$bJumpSuccessful" sinceversion="1">
+            <param name="destination" value="$oCommander.zone" />
+            <param name="ignorefuel" value="true" />
+            <param name="debugchance" value="$iLogInfo" />
+          </run_script>
+
+          <do_if value="$bJumpSuccessful">
+            <debug_text text="$sLogFormat.[player.age,'Successfully jumped to sector %1...'.[$oSector.knownname]]" filter="error" chance="$iLogInfo" />
+          </do_if>
+          <do_else>
+            <debug_text text="$sLogFormat.[player.age,'Jump to sector %1 unsuccessful. Trying again...'.[$oSector.knownname]]" filter="error" chance="$iLogInfo" />
+            <wait exact="5s" sinceversion="1" />
+          </do_else>
+        </do_elseif>
+
+        <!-- If our piloting skill is very high, we can make in-sector jumps, unless we failed too often -->
+        <do_elseif value="this.skill.navigation ge global.$UFO.$Skills.$iMinNavSkillForInSectorJump and $iInSectorJumpFailCount lt 3">
+          <debug_text text="$sLogFormat.[player.age,'Commander \'%1\' is in another zone in our sector. Since I am highly skilled, we do an in-sector jump...'.[$oCommander.knownname]]" filter="error" chance="$iLogInfo" />
+
+          <!-- We use the stock jump script -->
+          <!-- TODO: use custom script with less side-effects -->
+          <run_script name="'move.jump'" result="$bJumpSuccessful" sinceversion="1">
+            <param name="destination" value="$oCommander.zone" />
+            <param name="position" value="$oTargetPos" />
+            <param name="ignorefuel" value="true" />
+            <param name="forcejump" value="true" />
+            <param name="nonstop" value="true" />
+            <param name="autorefuel" value="false" />
+            <param name="debugchance" value="$iLogInfo" />
+          </run_script>
+
+          <do_if value="$bJumpSuccessful">
+            <debug_text text="$sLogFormat.[player.age,'Successfully jumped to commander \'%1\'.'.[$oCommander.knownname]]" filter="error" chance="$iLogInfo" />
+            <set_value name="$iInSectorJumpFailCount" exact="0" />
+          </do_if>
+          <do_else>
+            <set_value name="$iInSectorJumpFailCount" operation="add" />
+            <do_if value="$iInSectorJumpFailCount ge 3">
+              <debug_text text="$sLogFormat.[player.age,'Jump to commander \'%1\' was unsuccessful for third time. Boosting to it...'.[$oCommander.knownname]]" filter="error" chance="$iLogInfo" />
+            </do_if>
+            <do_else>
+              <debug_text text="$sLogFormat.[player.age,'Jump to commander \'%1\' was unsuccessful. Trying again...'.[$oCommander.knownname]]" filter="error" chance="$iLogInfo" />
+              <wait exact="5s" sinceversion="1" />
+            </do_else>
+          </do_else>
+        </do_elseif>
+
+        <!-- For large distances, we use the booster -->
+        <do_else>
+          <debug_text text="$sLogFormat.[player.age,'Commander \'%1\' is far away (%2m).'.[$oCommander.knownname, $mDist]]" filter="error" chance="$iLogInfo" />
+
+          <!-- The frequency of distance checks is dependent on navigation skill -->
+          <set_value name="$tSleep" min="7s" max="10s"/>
+          <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)"/>
+          <set_value name="$tSleep" exact="$tSleep + $tOffset" />
+
+          <!-- If we haven't started boosting yet, we align ourselves to our target first, and then start boosting -->
+          <do_if value="not $bBoosting">
+            <debug_text text="$sLogFormat.[player.age,'Aligning with target in preparation for boost...'.[$oCommander.knownname, $mDist]]" filter="error" chance="$iLogFine" />
+
+            <create_position name="$x" object="$oCommander" space="this.ship.zone" />
+            <create_position name="$y" object="this.ship" space="this.ship.zone" />
+            <create_position name="$d" x="($x.x - $y.x)/10" y="($x.y - $y.y)/10" z="($x.z - $y.z)/10" />
+            <create_position name="$t" x="$x.x - $d.x" y="$x.y - $d.y" z="$x.z - $d.z" />
+            <create_orientation name="$r" refobject="$oCommander" orientation="look_at">
+              <position value="$t" space="this.ship.zone" />
+            </create_orientation>
+
+            <debug_text text="$sLogFormat.[player.age,'Current rotation: %1, Target rotation: %2.'.[this.ship.rotation,$r]]" filter="error" chance="$iLogFinest" />
+
+            <move_to object="this.ship" destination="this.ship.zone" avoid="false" finishonapproach="false" forcesteering="true" forcerotation="true" forceposition="true" sinceversion="1">
+              <position value="$y" />
+              <rotation value="$r" />
+              <interrupt>
+                <conditions>
+                  <event_object_signalled object="this.ship" param="'UFO_EnemyActivity'" />
+                  <!-- As the captain, we only care for enemy activity, if we are set to break formation -->
+                  <check_value value="$sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak" />
+                </conditions>
+              </interrupt>
+              <!-- We also interrupt after $tSleep to react to any position change by our target -->
+              <interrupt_after_time time="$tSleep" />
+            </move_to>
+
+            <!-- Only if we are mostly aligned, so we start boosting -->
+            <set_value name="$fDiffYaw" exact="this.ship.rotation.yaw - $r.yaw" />
+            <set_value name="$fMaxDiffYaw" exact="pi / 16" />
+            <do_if value="$fDiffYaw lt $fMaxDiffYaw and $fDiffYaw gt -$fMaxDiffYaw">
+              <debug_text text="$sLogFormat.[player.age,'Aligned with target. Boosting to it...'.[$oCommander.knownname, $mDist]]" filter="error" chance="$iLogFine" />
+              <start_boost object="this.ship" />
+              <set_value name="$bBoosting" exact="true" />
+            </do_if>
+          </do_if>
+          <do_else>
+            <debug_text text="$sLogFormat.[player.age,'Current position: %1, Target Position: %2'.[this.ship.position, $oTargetPos]]" filter="error" chance="$iLogFinest" />
+
+            <!-- Move to our target. Also react to enemy activity if necessary -->
+            <move_to object="this.ship" destination="$oCommander.zone" usehighways="false" forceposition="true" forcesteering="true" sinceversion="1">
+              <position value="$oTargetPos" />
+              <interrupt>
+                <conditions>
+                  <event_object_signalled object="this.ship" param="'UFO_EnemyActivity'" />
+                  <!-- As the captain, we only care for enemy activity, if we are set to break formation -->
+                  <check_value value="$sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak" />
+                </conditions>
+              </interrupt>
+              <!-- We also interrupt after $tSleep to react to any position change by our target -->
+              <interrupt_after_time time="$tSleep" />
+            </move_to>
+          </do_else>
+        </do_else>
+      </do_while>
+
+      <!-- TODO: assign new commander? notify player? -->
+      <debug_text text="$sLogFormat.[player.age,'Commander was destroyed. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+      <do_if value="$bBoosting">
+        <stop_boost object="this.ship" />
+      </do_if>
+      <stop_moving object="this.ship" />
+      <set_command command="command.patrol" />
+    </actions>
+  </attention>
+  <on_abort>
+    <debug_text text="$sLogFormat.[player.age,'Aborted script. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+    <do_if value="$bBoosting">
+      <stop_boost object="this.ship" />
+    </do_if>
+    <stop_moving object="this.ship" />
+    <set_command command="command.patrol" />
+  </on_abort>
+</aiscript>

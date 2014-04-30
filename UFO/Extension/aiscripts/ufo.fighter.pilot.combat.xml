@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.4.3 Beta
+	Date: 25th Dec 2013
+  
+  X Rebirth version: 1.21
+-->
+
+<!--
+  This script should only be run on entities of type pilot that 
+  are currently piloting a ship of size m or smaller.
+  
+  Check for enemies and engages if necessary.
+-->
+<aiscript name="ufo.fighter.pilot.combat" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <interrupts>
+    <!-- Handler for updating debug level parameters -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="player.primaryship" param="'UFO_UpdateDebugLevel'" />
+      </conditions>
+      <actions>
+        <set_value name="$iLogError" exact="100 * (global.$UFO.$iDebugLevel ge 0)" />
+        <set_value name="$iLogInfo" exact="100 * (global.$UFO.$iDebugLevel ge 1)" />
+        <set_value name="$iLogFine" exact="100 * (global.$UFO.$iDebugLevel ge 2)" />
+        <set_value name="$iLogFinest" exact="100 * (global.$UFO.$iDebugLevel ge 3)" />
+      </actions>
+    </handler>
+  </interrupts>
+  <attention min="unknown">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+
+      <!-- First, we do some parameter sanity checking -->
+      <do_if value="this.type != entitytype.pilot or not [class.ship_xs,class.ship_s,class.ship_m].indexof.{this.ship.class}">
+        <debug_text text="$sLogFormat.[player.age,'This script should only be run on entities of type pilot that are currently piloting a ship of size m or smaller!']" filter="error" chance="$iLogError" />
+        <return />
+      </do_if>
+      <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+        <return />
+      </do_if>
+
+      <!-- Set all state variables -->
+      <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+      <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+      <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+      <set_value name="$bIsAggressive" exact="this.$UFO.$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sAggressive" />
+      <set_value name="$bIsDefensive" exact="this.$UFO.$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sDefensive" />
+
+      <!-- We run our fleet scan routines to find targets -->
+      <run_script name="'ufo.lib.fleet.reporting.scan'" result="$gEnemies" sinceversion="1" />
+
+      <!-- Now, we report and assess the enemies -->
+      <run_script name="'ufo.lib.fleet.reporting.assess'" sinceversion="1">
+        <param name="gEnemies" value="$gEnemies" />
+      </run_script>
+
+      <!-- Then, only if we are aggressive or were attacked, do we engage -->
+      <do_if value="$bIsAggressive or ($bIsDefensive and @$Fleet.$bWasAttacked)">
+
+        <!-- Finally, we ask the fleet to give us a target -->
+        <run_script name="'ufo.lib.fleet.reporting.get.priority.target'" result="$oPriorityTarget" sinceversion="1">
+          <save_retval name="gAdditionalTargets" variable="$gAdditionalTargets" />
+        </run_script>
+
+        <!-- If there is nothing to engage, we do nothing -->
+        <do_if value="not $oPriorityTarget">
+          <debug_text text="$sLogFormat.[player.age,'No enemies in engage distance (%1m). Aborting...'.[$mEngageDist]]" filter="error" chance="$iLogFine" />
+          <return value="false" />
+        </do_if>
+
+        <!-- Otherwise, we engage all enemies -->
+        <debug_text text="$sLogFormat.[player.age,'Found %1 enemies in %2m. Engaging...'.[$gAdditionalTargets.count + 1,$mEngageDist]]" filter="error" chance="$iLogFine" />
+
+        <leave_formation object="this.ship" />
+
+        <add_to_group groupname="$gPrimaryTargets" object="$oPriorityTarget" />
+        <run_script name="'fight.attack.object.fighter'" sinceversion="1">
+          <param name="primarytargets" value="$gPrimaryTargets" />
+          <param name="escortees" value="$Fleet.$gShips" />
+          <param name="allowothertargets" value="false" />
+        </run_script>
+
+        <return value="true" />
+      </do_if>
+
+      <return value="false" />
+    </actions>
+  </attention>
+  <on_abort>
+    <debug_text text="$sLogFormat.[player.age,'Aborted script. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+  </on_abort>
+</aiscript>

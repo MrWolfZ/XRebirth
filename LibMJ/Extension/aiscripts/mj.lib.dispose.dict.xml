@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+	This file is part of the X Rebirth LibMJ script library.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.0.1
+	Date: 20th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<!--
+  This script is used to create dictionaries for the calling entity.
+-->
+<aiscript name="mj.lib.dispose.dict" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <param name="dDict" />
+  </params>
+  <actions>
+    <!-- We create a signal for our special dictionary disposal cue -->
+    <signal_objects object="player.primaryship" param="'LibMJ_DisposeDictionary'" param2="$dDict" />
+  </actions>
+</aiscript>

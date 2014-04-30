@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.5.0 Beta
+	Date: 28th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+<diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <add sel="//dependency" pos="before">
+    <file name="ufo_menu_fleet_management.lua" />
+    <file name="ufo_menu_choose_stance.lua" />
+    <file name="ufo_menu_configuration.lua" />
+    <file name="ufo_menu_map.lua" />
+    <file name="ufo_menu_fleet_commands.lua" />
+  </add>
+</diff>

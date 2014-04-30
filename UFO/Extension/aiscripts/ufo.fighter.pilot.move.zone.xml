@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.4.3 Beta
+	Date: 25th Dec 2013
+  
+  X Rebirth version: 1.21
+-->
+
+<!--
+  This script should only be run on entities of type pilot that 
+  are currently piloting a ship of size m or smaller.
+  
+  Makes the pilot move one zone towards its commander.
+-->
+<aiscript name="ufo.fighter.pilot.move.zone" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <!-- HACK - disable collisionavoidance for this ship -->
+    <param name="bDisableCollisionAvoidance" default="false" />
+    <!-- Disable aborting existing path -->
+    <param name="bAbortPath" default="true" />
+    <!-- force steering flight control model -->
+    <param name="bForceSteering" default="false" />
+  </params>
+  <interrupts>
+    <!-- Handler for updating debug level parameters -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="player.primaryship" param="'UFO_UpdateDebugLevel'" />
+      </conditions>
+      <actions>
+        <set_value name="$iLogError" exact="100 * (global.$UFO.$iDebugLevel ge 0)" />
+        <set_value name="$iLogInfo" exact="100 * (global.$UFO.$iDebugLevel ge 1)" />
+        <set_value name="$iLogFine" exact="100 * (global.$UFO.$iDebugLevel ge 2)" />
+        <set_value name="$iLogFinest" exact="100 * (global.$UFO.$iDebugLevel ge 3)" />
+      </actions>
+    </handler>
+  </interrupts>
+  <attention min="unknown">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+
+      <!-- First, we do some parameter sanity checking -->
+      <do_if value="this.type != entitytype.pilot or not [class.ship_xs,class.ship_s,class.ship_m].indexof.{this.ship.class}">
+        <debug_text text="$sLogFormat.[player.age,'This script should only be run on entities of type pilot that are currently piloting a ship of size m or smaller!']" filter="error" chance="$iLogError" />
+        <return />
+      </do_if>
+      <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+        <return />
+      </do_if>
+
+      <!-- Set all state variables -->
+      <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+      <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+
+      <!-- If we are already in the correct zone, we can return immediately -->
+      <do_if value="$oCommander.zone == this.ship.zone">
+        <return />
+      </do_if>
+
+      <!-- Disable collision avoidance if desired -->
+      <do_if value="$bDisableCollisionAvoidance">
+        <set_avoid_collisions object="this.ship" enabled="false"/>
+      </do_if>
+      
+      <!-- Here, we wait a variable amount of time (simulating plotting the course) based on navigation skill -->
+      <wait exact="5s - (1s * this.skill.navigation)" sinceversion="1" />
+
+      <!-- undock in case we were docked -->
+      <run_script name="'move.undock'" sinceversion="1" />
+
+      <debug_text text="$sLogFormat.[player.age,'Moving one zone towards zone %1...'.[$oCommander.zone.knownname]]" filter="error" chance="$iLogInfo" />
+
+      <set_value name="$mDist" exact="this.ship.distanceto.{$oCommander.zone}" />
+      <set_value name="$oOldZone" exact="this.ship.zone" />
+
+      <!-- Check if we have a long distance trip ahead of us -->
+      <set_value name="$bIsLongDistance" exact="$mDist gt 20km" />
+      <set_value name="$sTripType" exact="'Short'" />
+      <set_value name="$sHighwayLabel" exact="'Not using'" />
+      <do_if value="$bIsLongDistance">
+        <set_value name="$sTripType" exact="'Long'" />
+        <set_value name="$sHighwayLabel" exact="'Using'" />
+      </do_if>
+
+      <debug_text text="$sLogFormat.[player.age,'%1 distance trip (%2m). %3 highways...'.[$sTripType,$mDist,$sHighwayLabel]]" filter="error" chance="$iLogFine" />
+
+      <!-- 
+        We move exactly one zone (includes movement into highways). We also
+        track our commander.
+      -->
+      <move_to object="this.ship" destination="$oCommander.zone" usehighways="$bIsLongDistance" abortpath="$bAbortPath" forcesteering="$bForceSteering" forceposition="false" sinceversion="1">
+        <interrupt>
+          <conditions>
+            <check_any>
+              <event_object_changed_zone object="this.ship" />
+              <event_object_changed_zone object="$oCommander" />
+              <event_object_attacked group="$Fleet.$gShips" />
+            </check_any>
+          </conditions>
+        </interrupt>
+      </move_to>
+
+      <do_if value="$oOldZone == this.ship.zone">
+        <debug_text text="$sLogFormat.[player.age,'Aborted one-zone trip since commander \'%1\' has changed zones or fleet was attacked.'.[$oCommander.knownname]]" filter="error" chance="$iLogInfo" />
+      </do_if>
+      <do_else>
+        <debug_text text="$sLogFormat.[player.age,'Completed one-zone trip from %1 to %2'.[$oOldZone.knownname,this.ship.zone.knownname]]" filter="error" chance="$iLogInfo" />
+      </do_else>
+      
+      <!-- Restore avoid collisions -->
+      <set_avoid_collisions object="this.ship" enabled="true"/>
+    </actions>
+  </attention>
+  <on_abort>
+    <debug_text text="$sLogFormat.[player.age,'Aborted script. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+    
+    <!-- Restore avoid collisions -->
+    <set_avoid_collisions object="this.ship" enabled="true"/>
+  </on_abort>
+</aiscript>

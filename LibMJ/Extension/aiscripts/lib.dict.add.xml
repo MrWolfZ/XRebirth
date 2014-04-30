@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.4.3 Beta
+	Date: 29th Dec 2013
+  
+  X Rebirth version: 1.21
+-->
+
+<!--
+  This script is part of a set of utility scripts to handle associative arrays (aka dictionaries).
+  
+  Dictionaries are represented as an array containing two lists of matching size, e.g. [['key1','key2'],['value1','value2']].
+
+  Adds a given key/value pair to a copy of the given dictionary and returns it.
+-->
+<aiscript name="lib.dict.add" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <param name="dDict" default="[[],[]]" />
+    <param name="oKey" />
+    <param name="oValue" />
+  </params>
+  <actions>
+    <!-- Sanity check for valid dictionary -->
+    <do_if value="$dDict.count != 2">
+      <debug_text filter="error" text="'The given dictionary %1 does not have the right size. Expected size: 2 (keys and values), Actual size: %2'.[$dDict,$dDict.count]" />
+      <return value="$dDict" />
+    </do_if>
+    
+    <!-- First, we create a shallow copy of the original dictionary -->
+    <set_value name="$lKeys" exact="$dDict.{1}.clone" />
+    <set_value name="$lValues" exact="$dDict.{2}.clone" />
+    
+    <!-- Sanity check for matching key and value list sizes -->
+    <do_if value="$lKeys.count != $lValues.count">
+      <debug_text filter="error" text="'The key and value lists of the given dictionary %1 do not match in size. Key count: %2, Value count: %3'.[$dDict,$lKeys.count,$lValues.count]" />
+      <return value="$dDict" />
+    </do_if>
+
+    <!-- Then, we find the key index -->
+    <set_value name="$iKeyIdx" exact="$lKeys.indexof.{$oKey}" />
+    
+    <!-- If the key already exists, we overwrite the value -->
+    <do_if value="$iKeyIdx gt 0">
+      <set_value name="$lValues.{$iKeyIdx}" exact="$oValue" />
+    </do_if>
+    
+    <!-- Otherwise, we add a new entry to the dictionary -->
+    <do_else>
+      <append_to_list name="$lKeys" exact="$oKey" />
+      <append_to_list name="$lValues" exact="$oValue" />
+    </do_else>
+
+    <!-- Lastly, we return the modified dictionary -->
+    <return value="[$lKeys,$lValues]" />
+  </actions>
+</aiscript>
