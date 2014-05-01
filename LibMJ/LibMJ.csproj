@@ -57,6 +57,7 @@
     <Content Include="Extension\aiscripts\mj.lib.log.xml" />
     <Content Include="Extension\content.xml" />
     <Content Include="Extension\md\LibMJ.xml" />
+    <Content Include="Extension\README.txt" />
     <Content Include="Extension\t\0001-L007.xml" />
     <Content Include="Extension\t\0001-L033.xml" />
     <Content Include="Extension\t\0001-L034.xml" />
@@ -66,6 +67,12 @@
     <Content Include="Extension\t\0001-L086.xml" />
     <Content Include="Extension\t\0001-L088.xml" />
     <Content Include="Extension\ui\addons\detailmonitor\detailmonitor.xml" />
+    <Content Include="Publish\Forums.txt" />
+    <Content Include="Publish\Images\logo-base.png" />
+    <Content Include="Publish\Images\logo.png" />
+    <Content Include="Publish\Nexus.txt" />
+    <Content Include="Publish\Release Post.txt" />
+    <Content Include="Publish\Workshop.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
