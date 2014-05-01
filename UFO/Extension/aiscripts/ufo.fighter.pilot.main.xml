@@ -18,6 +18,9 @@
   The main script for fighters in UFO fleets.
 -->
 <aiscript name="ufo.fighter.pilot.main" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <params>
+    <param name="oEscortTarget" default="null" />
+  </params>
   <interrupts>
     <!-- Handler used to update the parameters under which this entity works -->
     <handler>
@@ -124,6 +127,11 @@
       <set_value name="$mTargetDistMax" exact="10km" />
       <set_value name="$oCommander" exact="$Fleet.$oCommander" />
       
+      <!-- We also check if an escort target was set, in which case we follow that instead of the commander -->
+      <do_if value="$oEscortTarget != null and $oEscortTarget.exists and $oEscortTarget.isoperational">
+        <set_value name="$oCommander" exact="$oEscortTarget" />
+      </do_if>
+      
       <!-- The formation to use for in-sector following, and it's parameters -->
       <!-- TODO: set this on fleet level and make it configurable -->
       <set_value name="$eFormation" exact="formationshape.pointguard" />
@@ -183,8 +191,40 @@
 
           <debug_text text="$sLogFormat.[player.age,'Our target \'%1\' is far away (%2m).'.[$oCommander.knownname,$mDist]]" filter="error" chance="$iLogFinest" />
 
+          <!-- 
+            In case the target is in a highway, we use a hack. Instead of trying to use the
+            highway as well (which I tried, but didn't completely manage), we simply wait
+            for the target to exit and then after a short delay warp ourselves to it. If you 
+            are a modder reading this and thinking about fixing it, you sure can try, but I 
+            am warning you that it will drive you into despair :) 
+            One unsolved issue is that NPC ships fly faster than the Skunk in highways, which
+            means I would have to do some shenanigans with warping the followers around in
+            the highway, etc, which I didn't want to do in the end.
+          -->
+          <do_if value="$oCommander.zone.isclass.highway">
+            <debug_text text="$sLogFormat.[player.age,'Target \'%1\' is moving in highway %2. Gaining distance while waiting for it to exit...'.[$oCommander.knownname,$oCommander.zone.knownname]]" filter="error" chance="$iLogInfo" />
+
+            <!-- We mark ourselves for needing to warp -->
+            <set_value name="this.$UFO.$bWarpToTarget" exact="true" />
+
+            <!-- Then we wait based on the navigation skill of the pilot -->
+            <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)" />
+            <set_value name="$tWait" min="1s + $tOffset" max="2s + $tOffset" />
+
+            <!-- 
+              We wait until our target leaves the highway. Since we are going to warp to it
+              anyways, we are acting defensively here and go into "flee" mode in case we
+              were engaging enemies (thus saving us an actualy combat check).
+              Also note that the zone change will be registered via the global interrupt. We
+              also to a time-based interrupt.
+            -->
+            <move_to object="this.ship" destination="this.ship.zone" flightbehaviour="flightbehaviour.gaindistance" forcesteering="true" sinceversion="1">
+              <interrupt_after_time time="$tWait" />
+            </move_to>
+          </do_if>
+          
           <!-- We might have been marked as needing to warp to our target -->
-          <do_if value="@this.$UFO.$bWarpToTarget">
+          <do_elseif value="@this.$UFO.$bWarpToTarget">
             <debug_text text="$sLogFormat.[player.age,'We need to warp to target \'%1\' at %2. Gaining distance while preparing warp...'.[$oCommander.knownname,$oCommander.zone.knownname]]" filter="error" chance="$iLogInfo" />
 
             <!-- We store the position of the target here -->
@@ -218,38 +258,6 @@
 
             <!-- Once the warp is complete we wait a short time for the zone change to register -->
             <wait exact="0.5s" sinceversion="1" />
-          </do_if>
-
-          <!-- 
-            In case the target is in a highway, we use a hack. Instead of trying to use the
-            highway as well (which I tried, but didn't completely manage), we simply wait
-            for the target to exit and then after a short delay warp ourselves to it. If you 
-            are a modder reading this and thinking about fixing it, you sure can try, but I 
-            am warning you that it will drive you into despair :) 
-            One unsolved issue is that NPC ships fly faster than the Skunk in highways, which
-            means I would have to do some shenanigans with warping the followers around in
-            the highway, etc, which I didn't want to do in the end.
-          -->
-          <do_elseif value="$oCommander.zone.isclass.highway">
-            <debug_text text="$sLogFormat.[player.age,'Target \'%1\' is moving in highway %2. Gaining distance while waiting for it to exit...'.[$oCommander.knownname,$oCommander.zone.knownname]]" filter="error" chance="$iLogInfo" />
-
-            <!-- We mark ourselves for needing to warp -->
-            <set_value name="this.$UFO.$bWarpToTarget" exact="true" />
-
-            <!-- Then we wait based on the navigation skill of the pilot -->
-            <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)" />
-            <set_value name="$tWait" min="1s + $tOffset" max="2s + $tOffset" />
-            
-            <!-- 
-              We wait until our target leaves the highway. Since we are going to warp to it
-              anyways, we are acting defensively here and go into "flee" mode in case we
-              were engaging enemies (thus saving us an actualy combat check).
-              Also note that the zone change will be registered via the global interrupt. We
-              also to a time-based interrupt.
-            -->
-            <move_to object="this.ship" destination="this.ship.zone" flightbehaviour="flightbehaviour.gaindistance" forcesteering="true" sinceversion="1">
-              <interrupt_after_time time="$tWait" />
-            </move_to>
           </do_elseif>
 
           <!-- otherwise, we make a one-zone trip towards our commander -->

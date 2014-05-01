@@ -113,9 +113,18 @@ Buttons.selectEscortShip = function (state)
 	local title = ReadText(99998,21) -- "Choose Ship to Escort"
 	local ships = Functions.getShipsForEscort(state)
 	
+    local commanderIsFighter = IsComponentClass(state.fleet.commander, "ship_s") or IsComponentClass(state.fleet.commander, "ship_m")
+
+    -- we disallow fighter fleets escorting fighter fleets, since this will screw up formations
     local shipDescriptors = {}
+    local notSupportedYetLabel = ReadText(99998,9001) -- "not supported yet"
     for _, ship in ipairs(ships) do
-        table.insert(shipDescriptors, { ship = ship, selectable = true })
+        local shipIsFighter = IsComponentClass(ship, "ship_s") or IsComponentClass(ship, "ship_m")
+        table.insert(shipDescriptors, { 
+            ship = ship, 
+            selectable = not commanderIsFighter or not shipIsFighter,
+            additionalLabel = commanderIsFighter and shipIsFighter and "(" .. notSupportedYetLabel .. ")"
+        })
     end
 
 	LibMJ:OpenMenu("LibMJ_ShipSelection",nil,title,shipDescriptors)

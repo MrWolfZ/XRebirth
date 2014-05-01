@@ -68,7 +68,6 @@
         </run_script>
       </do_if>
       <do_elseif value="this.$UFO.$sCommand == global.$UFO.$Commands.$sMoveToZone">
-        <!-- Start default follow script for captain and tell it to move to the beacon -->
         <run_script name="'ufo.capital.commander.move.to.zone'" sinceversion="1"/>
       </do_elseif>
 

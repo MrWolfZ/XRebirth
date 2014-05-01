@@ -58,7 +58,7 @@
           <create_group groupname="$gActiveShips" />
           <do_all exact="$Fleet.$gShips.count" counter="$i">
             <set_value name="$oShip" exact="$Fleet.$gShips.{$i}" />
-            <do_if value="@$oShip.exists and @$oShip.isoperational">
+            <do_if value="@$oShip.exists and @$oShip.isoperational and @$oShip != player.primaryship">
               <!-- We also check whether there are still UFO scripts running on the pilot of each ship -->
               <do_if value="$oShip.pilot.exists and @$oShip.pilot.$UFO.$lActiveScripts.count gt 0">
                 <add_to_group groupname="$gActiveShips" object="$oShip" />

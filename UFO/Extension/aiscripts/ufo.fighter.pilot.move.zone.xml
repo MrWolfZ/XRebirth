@@ -25,6 +25,8 @@
     <param name="bAbortPath" default="true" />
     <!-- force steering flight control model -->
     <param name="bForceSteering" default="false" />
+    <!-- The zone to move to (will fall back to commander's zone if not provided) -->
+    <param name="oTargetZone" default="this.$UFO.$Fleet.$oCommander.zone" />
   </params>
   <interrupts>
     <!-- Handler for updating debug level parameters -->
@@ -66,7 +68,7 @@
       <set_value name="$oCommander" exact="$Fleet.$oCommander" />
 
       <!-- If we are already in the correct zone, we can return immediately -->
-      <do_if value="$oCommander.zone == this.ship.zone">
+      <do_if value="$oTargetZone == this.ship.zone">
         <return />
       </do_if>
 
@@ -81,9 +83,9 @@
       <!-- undock in case we were docked -->
       <run_script name="'move.undock'" sinceversion="1" />
 
-      <debug_text text="$sLogFormat.[player.age,'Moving one zone towards zone %1...'.[$oCommander.zone.knownname]]" filter="error" chance="$iLogInfo" />
+      <debug_text text="$sLogFormat.[player.age,'Moving one zone towards zone %1...'.[$oTargetZone.knownname]]" filter="error" chance="$iLogInfo" />
 
-      <set_value name="$mDist" exact="this.ship.distanceto.{$oCommander.zone}" />
+      <set_value name="$mDist" exact="this.ship.distanceto.{$oTargetZone}" />
       <set_value name="$oOldZone" exact="this.ship.zone" />
 
       <!-- Check if we have a long distance trip ahead of us -->
@@ -101,7 +103,7 @@
         We move exactly one zone (includes movement into highways). We also
         track our commander.
       -->
-      <move_to object="this.ship" destination="$oCommander.zone" usehighways="$bIsLongDistance" abortpath="$bAbortPath" forcesteering="$bForceSteering" forceposition="false" sinceversion="1">
+      <move_to object="this.ship" destination="$oTargetZone" usehighways="$bIsLongDistance" abortpath="$bAbortPath" forcesteering="$bForceSteering" forceposition="false" sinceversion="1">
         <interrupt>
           <conditions>
             <check_any>

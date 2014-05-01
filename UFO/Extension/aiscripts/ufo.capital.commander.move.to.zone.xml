@@ -34,7 +34,8 @@
         <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
         <!-- The maximum distance we may be away from our target before we abort pursuing enemies -->
         <set_value name="$mAbortDist" exact="$mEngageDist + 5km" />
-        <set_value name="$mShortDistMax" exact="this.ship.size * 3" />
+        <set_value name="$mSleepDistMax" exact="this.ship.size * 2" />
+        <set_value name="$mShortDistMax" exact="$mSleepDistMax * 1.5" />
       </actions>
     </handler>
     <!-- Handler for updating debug level parameters -->
@@ -51,12 +52,7 @@
     </handler>
   </interrupts>
   <init>
-    <do_if value="this.ship != this.$UFO.$Fleet.$oCommander">
-      <set_command command="command.follow" param="this.$UFO.$Fleet.$oCommander" />
-      <do_if value="this.$UFO.$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sAggressive">
-        <set_command command="command.escort" param="this.$UFO.$Fleet.$oCommander" />
-      </do_if>
-    </do_if>
+    <set_command command="command.move" param="$Fleet.$lCommand.{2}.{1}" />
   </init>
   <attention min="unknown">
     <actions>
@@ -354,6 +350,5 @@
       <stop_boost object="this.ship" />
     </do_if>
     <stop_moving object="this.ship" />
-    <set_command command="command.patrol" />
   </on_abort>
 </aiscript>

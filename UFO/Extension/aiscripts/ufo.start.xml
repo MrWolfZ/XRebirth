@@ -75,7 +75,6 @@
         </do_else>
       </do_elseif>
       <do_elseif value="this.type == entitytype.commander">
-        <!--<set_avoid_collisions object="this.ship" enabled="false" />-->
         <!-- The captain of the fleet commander needs a different script -->
         <do_if value="this.ship == $Fleet.$oCommander">
           <run_script name="'ufo.capital.commander.main'" sinceversion="1" />
@@ -88,12 +87,16 @@
 
       <!-- Remove this script from the stack -->
       <remove_value name="this.$UFO.$lActiveScripts.{this.$UFO.$lActiveScripts.count}" />
-      <set_avoid_collisions object="this.ship" enabled="true" />
     </actions>
   </attention>
   <on_abort>
-    <!-- Remove this script from the stack -->
-    <remove_value name="this.$UFO.$lActiveScripts.{this.$UFO.$lActiveScripts.count}" />
-    <set_avoid_collisions object="this.ship" enabled="true" />
+    <!-- Sometimes, this script gets canceled twice, so we check if we haven't yet removed this script -->
+    <!-- TODO: find out why this happens -->
+    <do_if value="@this.$UFO.$lActiveScripts.count gt 0">
+      <debug_text text="$sLogFormat.[player.age,'Aborted script. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+
+      <!-- Remove this script from the stack -->
+      <remove_value name="this.$UFO.$lActiveScripts.{this.$UFO.$lActiveScripts.count}" />
+    </do_if>
   </on_abort>
 </aiscript>

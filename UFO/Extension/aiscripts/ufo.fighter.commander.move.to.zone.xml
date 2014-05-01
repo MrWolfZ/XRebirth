@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<!-- 
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+  Last Change:
+	Version: V0.5.0 Beta
+	Date: 26th Apr 2014
+  
+  X Rebirth version: 1.30
+-->
+
+<!--
+  This script should only be run on entities of type pilot that 
+  are currently piloting a ship of size m or smaller.
+  
+  The main script for the fleet command "Move to Zone" for pilots.
+-->
+<aiscript name="ufo.fighter.commander.move.to.zone" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+  <interrupts>
+    <!-- Handler used to update the parameters under which this entity works -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="this.ship" param="'UFO_UpdateState'" />
+      </conditions>
+      <actions>
+        <debug_text text="$sLogFormat.[player.age,'Received update state request. Updating...']" filter="error" chance="$iLogInfo" />
+
+        <!-- Set all state variables -->
+        <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+        <set_value name="$sAggressionLevel" exact="this.$UFO.$sAggressionLevel" />
+        <set_value name="$sFormationMode" exact="this.$UFO.$sFormationMode" />
+        <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+        <!-- The maximum distance we may be away from our target before we abort pursuing enemies -->
+        <set_value name="$mAbortDist" exact="$mEngageDist + 5km" />
+        <set_value name="$mSleepDistMax" exact="2km" />
+        <set_value name="$mShortDistMax" exact="$mSleepDistMax * 1.5" />
+      </actions>
+    </handler>
+    <!-- Handler for updating debug level parameters -->
+    <handler>
+      <conditions>
+        <event_object_signalled object="player.primaryship" param="'UFO_UpdateDebugLevel'" />
+      </conditions>
+      <actions>
+        <set_value name="$iLogError" exact="100 * (global.$UFO.$iDebugLevel ge 0)" />
+        <set_value name="$iLogInfo" exact="100 * (global.$UFO.$iDebugLevel ge 1)" />
+        <set_value name="$iLogFine" exact="100 * (global.$UFO.$iDebugLevel ge 2)" />
+        <set_value name="$iLogFinest" exact="100 * (global.$UFO.$iDebugLevel ge 3)" />
+      </actions>
+    </handler>
+  </interrupts>
+  <attention min="unknown">
+    <actions>
+      <run_script name="'mj.lib.log'" sinceversion="1">
+        <param name="iDebugLevel" value="global.$UFO.$iDebugLevel" />
+        <save_retval name="sLogFormat" variable="$sLogFormat" />
+        <save_retval name="iLogError" variable="$iLogError" />
+        <save_retval name="iLogInfo" variable="$iLogInfo" />
+        <save_retval name="iLogFine" variable="$iLogFine" />
+        <save_retval name="iLogFinest" variable="$iLogFinest" />
+      </run_script>
+
+      <!-- First, we do some parameter sanity checking -->
+      <do_if value="this.type != entitytype.pilot or not [class.ship_xs,class.ship_s,class.ship_m].indexof.{this.ship.class}">
+        <debug_text text="$sLogFormat.[player.age,'This script should only be run on entities of type pilot that are currently piloting a ship of size m or smaller!']" filter="error" chance="$iLogError" />
+        <return />
+      </do_if>
+      <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+        <return />
+      </do_if>
+
+      <!-- Set all state variables -->
+      <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
+      <set_value name="$sAggressionLevel" exact="this.$UFO.$sAggressionLevel" />
+      <set_value name="$sFormationMode" exact="this.$UFO.$sFormationMode" />
+      <set_value name="$mEngageDist" exact="this.$UFO.$mEngageDist" />
+      <!-- The maximum distance we may be away from our target before we abort pursuing enemies -->
+      <set_value name="$mAbortDist" exact="$mEngageDist + 5km" />
+      <set_value name="$mSleepDistMax" exact="2km" />
+      <set_value name="$mShortDistMax" exact="$mSleepDistMax * 1.5" />
+      <set_value name="$oZone" exact="$Fleet.$lCommand.{2}.{1}" />
+
+      <do_if value="not $oZone.exists or not $oZone.isclass.zone">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be used to move to a target zone.']" />
+        <return />
+      </do_if>
+      <do_if value="$oZone.isclass.highway">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'Cannot move to a highway.']" />
+        <return />
+      </do_if>
+
+      <!-- We remove the stock commander -->
+      <remove_object_commander object="this.ship" />
+
+      <debug_text text="$sLogFormat.[player.age,'Started \'Move to Zone\' commander script. Fleet ID: %1, aggression level: %2, formation mode: %3, engagement distance: %4'.[$Fleet.$iId, $sAggressionLevel, $sFormationMode, $mEngageDist]]" filter="error" chance="$iLogInfo" />
+
+      <get_safe_pos result="$oTargetPos" zone="$oZone" radius="this.ship.size" min="0" max="500m" />
+
+      <!-- undock in case we were docked -->
+      <run_script name="'move.undock'" sinceversion="1" />
+
+      <!-- Use while loop since goto is evil -->
+      <do_while value="true">
+
+        <set_value name="$mDist" exact="this.ship.distanceto.{$oZone}" />
+
+        <!-- Check base conditions for engaging enemies -->
+        <do_if value="$mDist lt $mAbortDist and $sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak">
+          <!-- Then, we run our combat behavior -->
+          <run_script name="'ufo.fighter.pilot.combat'" result="$bInCombat" sinceversion="1" />
+
+          <!-- If we are still in combat, we need to reset the main loop -->
+          <do_if value="$bInCombat">
+            <continue />
+          </do_if>
+        </do_if>
+
+        <!-- Handle short distance to commander -->
+        <do_if value="$mDist lt $mShortDistMax">
+          <!-- We only need to move if we are futher away than allowed -->
+          <do_if value="$mDist gt $mSleepDistMax">
+            <debug_text text="$sLogFormat.[player.age,'Zone \'%1\' is not at proper distance (%2m). Adjusting position...'.[$oZone.knownname,$mDist]]" filter="error" chance="$iLogFine" />
+
+            <!-- The frequency of distance checks is dependent on navigation skill -->
+            <set_value name="$tSleep" min="3s" max="5s"/>
+            <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)"/>
+            <set_value name="$tSleep" exact="$tSleep + $tOffset" />
+
+            <!-- Move to our target. Also react to enemy activity if necessary -->
+            <move_to object="this.ship" destination="$oZone" usehighways="false" forceposition="false" forcesteering="true" sinceversion="1" avoid="false" flightbehaviour="flightbehaviour.generic">
+              <position value="$oTargetPos" />
+              <interrupt>
+                <conditions>
+                  <event_object_signalled object="this.ship" param="'UFO_EnemyActivity'" />
+                  <!-- As the captain, we only care for enemy activity, if we are set to break formation -->
+                  <check_value value="$sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak" />
+                </conditions>
+              </interrupt>
+              <!-- We also interrupt after $tSleep to react to any position change by our target -->
+              <interrupt_after_time time="$tSleep" />
+            </move_to>
+          </do_if>
+
+          <!-- Otherwise, we are close and go to idle -->
+          <do_else>
+            <stop_moving object="this.ship" />
+
+            <!-- Since we are idle, we just sleep -->
+            <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)"/>
+            <wait min="3s + $tOffset" max="5s + $tOffset" sinceversion="1">
+              <interrupt>
+                <conditions>
+                  <event_object_signalled object="this.ship" param="'UFO_EnemyActivity'" />
+                  <!-- As the captain, we only care for enemy activity, if we are set to break formation -->
+                  <check_value value="$sFormationMode == global.$UFO.$Stances.$FormationModes.$sBreak" />
+                </conditions>
+              </interrupt>
+            </wait>
+          </do_else>
+        </do_if>
+        
+        <!-- Otherwise, we make a one-zone trip towards our target zone -->
+        <do_else>
+          <debug_text text="$sLogFormat.[player.age,'Zone \'%1\' is far away (%2m).'.[$oZone.knownname, $mDist]]" filter="error" chance="$iLogInfo" />
+
+          <run_script name="'ufo.fighter.pilot.move.zone'" sinceversion="1">
+            <param name="oTargetZone" value="$oZone" />
+          </run_script>
+        </do_else>
+      </do_while>
+
+      <stop_moving object="this.ship" />
+    </actions>
+  </attention>
+  <on_abort>
+    <debug_text text="$sLogFormat.[player.age,'Aborted script. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+    <stop_moving object="this.ship" />
+  </on_abort>
+</aiscript>

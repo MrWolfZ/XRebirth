@@ -47,6 +47,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Extension\aiscripts\ufo.fighter.commander.move.to.zone.xml" />
     <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_choose_stance.lua" />
     <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_configuration.lua" />
     <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_fleet_commands.lua" />
@@ -54,9 +55,6 @@
     <None Include="Extension\ui\addons\detailmonitor\sources\ufo_menu_map.lua" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="E:\Program Files %28x86%29\Steam\steamapps\common\X Rebirth\extensions\UFO_Test\md\UFO_Test.xml">
-      <Link>Extension\md\UFO_Test.xml</Link>
-    </Content>
     <Content Include="Extension\aiscripts\fight.attack.object.drone.leader.xml" />
     <Content Include="Extension\aiscripts\ufo.capital.captain.combat.xml" />
     <Content Include="Extension\aiscripts\ufo.capital.captain.main.xml">
@@ -66,7 +64,6 @@
     <Content Include="Extension\aiscripts\ufo.capital.commander.move.to.zone.xml" />
     <Content Include="Extension\aiscripts\ufo.capital.defence.fire.xml" />
     <Content Include="Extension\aiscripts\ufo.capital.defence.main.xml" />
-    <Content Include="Extension\aiscripts\ufo.fight.fighter.attack.object.xml" />
     <Content Include="Extension\aiscripts\ufo.fighter.commander.main.xml" />
     <Content Include="Extension\aiscripts\ufo.fighter.pilot.combat.xml" />
     <Content Include="Extension\aiscripts\ufo.fighter.pilot.main.xml" />
