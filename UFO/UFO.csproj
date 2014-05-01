@@ -95,6 +95,9 @@
     <Content Include="Publish\Images\logo-square-base.png" />
     <Content Include="Publish\Images\logo-square.png" />
     <Content Include="Publish\Images\logo.png" />
+    <Content Include="Publish\Images\ui-1.png" />
+    <Content Include="Publish\Images\ui-2.png" />
+    <Content Include="Publish\Images\ui-3.png" />
     <Content Include="Publish\Misc Notes.txt" />
     <Content Include="Publish\Nexus.txt" />
     <Content Include="Publish\Release Post.txt" />

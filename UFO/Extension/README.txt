@@ -98,6 +98,7 @@ and will start the stock capital defence script on all defence officers.
   does not take obstacles into account. Capital ships will also sometimes get stuck in crowded areas. To resolve this issue
   simply leave the area, since movement that happens outside of the player's area is not impeded by obstacles.
 - Fleets lead by fighters cannot escort other fighters; this is due to how formations work in the game
+- Zones and ships as targets for fleet commands can not yet be selected via the map, but instead use a list menu
 - Launched drones might not always correctly return to their carrier
 - When a fleet commander is killed, the fleet will be dissolved and you will have to create a new fleet
 - UFO cannot cope with crew changes; should you change some crew on a fleet ship, please re-assign the ship
