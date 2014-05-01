@@ -16,7 +16,7 @@ local function init()
 	end
 end
 
-Functions.onMenuInit = function (state, title, ships, chooseMultiple)
+Functions.onMenuInit = function (state, title, shipDescriptors, chooseMultiple)
 	state.title = title or ReadText(99997,2) -- "Select Ship(s)"
 	state.chooseMultiple = chooseMultiple
 	
@@ -24,15 +24,16 @@ Functions.onMenuInit = function (state, title, ships, chooseMultiple)
 	local mediumShips = {}
 	local largeShips = {}
 	local extraLargeShips = {}
-	for _, ship in ipairs(ships) do
+	for _, shipDesc in ipairs(shipDescriptors) do
+        local ship = shipDesc.ship
 		if IsComponentClass(ship, "ship_xl") then
-			table.insert(extraLargeShips, ship)
+			table.insert(extraLargeShips, shipDesc)
 		elseif IsComponentClass(ship, "ship_l") then
-			table.insert(largeShips, ship)
+			table.insert(largeShips, shipDesc)
 		elseif IsComponentClass(ship, "ship_m") then
-			table.insert(mediumShips, ship)
+			table.insert(mediumShips, shipDesc)
 		elseif IsComponentClass(ship, "ship_s") then
-			table.insert(smallShips, ship)
+			table.insert(smallShips, shipDesc)
 		end
 	end
 	
@@ -88,18 +89,22 @@ Functions.rowProvider = function (state, rowCollection)
 		
 		-- if category is extended, add line per ship
 		if isExpanded then
-			for _, ship in ipairs(ships) do		
+			for _, shipDesc in ipairs(ships) do		
+                local ship = shipDesc.ship
 				local cells = { LibMJ:Cell() }
 				
-				local shipName = GetComponentData(ship, "name")
-				table.insert(cells, LibMJ:Cell(shipName))
+				local shipLabel = GetComponentData(ship, "name")
+                if shipDesc.additionalLabel then
+                    shipLabel = shipLabel .. " " .. shipDesc.additionalLabel
+                end
+				table.insert(cells, LibMJ:Cell(shipLabel))
 				
-				local maxHull, hullPrc, maxShield, shieldPrc, cluster, sector, zone = GetComponentData(ship, "hullmax", "hullpercent", "shieldmax", "shieldpercent", "cluster", "sector", "zone")										
-				local shipStatus = string.format("%s: %.0f%%", ReadText(1001, 1), hullPrc)
+				local maxHull, hullPrc, maxShield, shieldPrc, cluster, sector, zone = GetComponentData(ship, "hullmax", "hullpercent", "shieldmax", "shieldpercent", "cluster", "sector", "zone")														
+				local shipStatus = string.format("%s: %.0f%%", "H", hullPrc)
 				if maxShield and maxShield > 0 then
-					shipStatus = string.format("%s, %s: %.0f%%", shipStatus, ReadText(1001, 2), shieldPrc)
+					shipStatus = string.format("%s, %s: %.0f%%", shipStatus, "S", shieldPrc)
 				end
-				shipStatus = string.format("%s, %s: %s / %s / %s", shipStatus, ReadText(1001, 2943), cluster, sector, zone)
+				shipStatus = string.format("%s, %s / %s / %s", shipStatus, cluster, sector, zone)
 				
 				table.insert(cells, LibMJ:Cell(shipStatus))
 	
@@ -115,8 +120,9 @@ Functions.rowProvider = function (state, rowCollection)
 						LibMJ:CloseMenu()
 					end
 				end
+                local selectShipButtonSelectable = shipDesc.selectable
 				
-				table.insert(cells, LibMJ:ButtonCell(selectShipButtonLabel, selectShipButtonScript))
+				table.insert(cells, LibMJ:ButtonCell(selectShipButtonLabel, selectShipButtonScript, 1, selectShipButtonSelectable))
 				
 				local rowData = { ["Ship"] = ship }
 				table.insert(rowCollection, LibMJ:Row(cells, rowData))
@@ -127,7 +133,7 @@ Functions.rowProvider = function (state, rowCollection)
 	state.initialized = true
 
 	local butWidth = Helper.standardButtonWidth - 10
-	local colWidths = { butWidth, 200, 0, 80 }
+	local colWidths = { butWidth, 260, 0, 80 }
 	local isColumnWidthsInPercent = false
 	local fixedRows = 0
 	return colWidths, isColumnWidthsInPercent, fixedRows

@@ -231,7 +231,18 @@ Functions.onReturnArgsReceived = function(state, isClosingAll, returnArgs)
 			local ships = Functions.getUnassignedShips()			
 			local chooseMultiple = false
 			
-			LibMJ:OpenMenu("LibMJ_ShipSelection", nil, title, ships, chooseMultiple)
+            -- let the menu know fighters are not yet supported as fleet commanders
+            local shipDescriptors = {}
+            local smallShipLabel = ReadText(99998,9001)
+            for _, ship in ipairs(ships) do
+                local isCap = IsComponentClass(ship, "ship_l") or IsComponentClass(ship, "ship_xl")
+                table.insert(shipDescriptors, { 
+                    ship = ship, 
+                    selectable = true
+                })
+            end
+
+			LibMJ:OpenMenu("LibMJ_ShipSelection", nil, title, shipDescriptors, chooseMultiple)
 			
 			-- don't reopen this menu
 			return false
@@ -385,9 +396,14 @@ end
 Functions.rowProvider = function (state, rowCollection)
 	state.fleetToRowIdx = {}
 	if #Fleets > 0 then
-		for _, fleet in ipairs(Fleets) do	
+		for i, fleet in ipairs(Fleets) do	
 			local ships = fleet.ships
-			local isExpanded = LibMJ:IsExpanded(#rowCollection + 1)
+			local isExpanded = LibMJ:IsExpanded(#rowCollection + 1) or ExpandedFleets[i]
+
+		    -- we expand the fleets according to the saved state every time the fleet management menu is opened
+		    if ExpandedFleets[i] then
+			    LibMJ:ExpandRow(#rowCollection, true)
+		    end
 						
 			local rowData = { ["Fleet"] = fleet, ["ValidForBroadcastStance"] = true }
 			local cells = {}
@@ -463,11 +479,14 @@ Functions.rowProvider = function (state, rowCollection)
 					table.insert(cells, LibMJ:Cell(shipLabel, nil, 2))
 
 					local maxHull, hullPrc, maxShield, shieldPrc, cluster, sector, zone = GetComponentData(ship, "hullmax", "hullpercent", "shieldmax", "shieldpercent", "cluster", "sector", "zone")										
-					local shipStatus = string.format("%s: %.0f%%", ReadText(1001, 1), hullPrc)					
+					-- local shipStatus = string.format("%s: %.0f%%", ReadText(1001, 1), hullPrc)					
+					local shipStatus = string.format("%s: %.0f%%", "H", hullPrc)					
 					if maxShield and maxShield > 0 then
-						shipStatus = string.format("%s, %s: %.0f%%", shipStatus, ReadText(1001, 2), shieldPrc)
+						-- shipStatus = string.format("%s, %s: %.0f%%", shipStatus, ReadText(1001, 2), shieldPrc)
+						shipStatus = string.format("%s, %s: %.0f%%", shipStatus, "S", shieldPrc)
 					end
-					shipStatus = string.format("%s, %s: %s / %s / %s", shipStatus, ReadText(1001, 2943), cluster, sector, zone)
+					-- shipStatus = string.format("%s, %s: %s / %s / %s", shipStatus, ReadText(99997, 1001), cluster, sector, zone)
+					shipStatus = string.format("%s, %s / %s / %s", shipStatus, cluster, sector, zone)
 					
 					table.insert(cells, LibMJ:Cell(shipStatus, nil, 4))
 					
@@ -672,9 +691,23 @@ Buttons.openAddShipsMenu = function (state, fleet)
 	local ships = Functions.getUnassignedShips(state)
 	local chooseMultiple = true
 
-    -- TODO: let the menu know that ships without defence officers cannot be selected
+    -- let the menu know that ships without defence officers cannot be selected
+    local shipDescriptors = {}
+    local noDefenceNPCWarning = ReadText(99998,30) .. " " .. ReadText(20208,1501) -- "no Defence Officer"
+    for _, ship in ipairs(ships) do
+        local isCap = IsComponentClass(ship, "ship_l") or IsComponentClass(ship, "ship_xl")
+        local pilot = GetComponentData(ship, "pilot")
+        local noPilotWarning = ReadText(99998,30) .. " " .. ((isCap and ReadText(20208,501)) or ReadText(20208,401)) -- "no Pilot/no Captain"
+        local defenceNPC = GetComponentData(ship, "defencenpc")
+
+        table.insert(shipDescriptors, { 
+            ship = ship, 
+            selectable = pilot and (not isCap or defenceNPC ~= nil),
+            additionalLabel = (not pilot and "(" .. noPilotWarning .. ")") or (isCap and not defenceNPC and "(" .. noDefenceNPCWarning .. ")")
+        })
+    end
     	
-	LibMJ:OpenMenu("LibMJ_ShipSelection", nil, title, ships, chooseMultiple)
+	LibMJ:OpenMenu("LibMJ_ShipSelection", nil, title, shipDescriptors, chooseMultiple)
 end
 
 Buttons.createNewFleet = function (state, rowIdx, rowData, initialText)

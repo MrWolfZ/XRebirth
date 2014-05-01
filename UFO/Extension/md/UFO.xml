@@ -87,7 +87,7 @@
         <set_value name="$iOldDebugLevel" exact="@$Config.$iDebugLevel" />
 
         <!-- UFO debug level -->
-        <set_value name="$Config.$iDebugLevel" exact="3" />
+        <set_value name="$Config.$iDebugLevel" exact="0" />
 
         <do_if value="$iOldDebugLevel != $Config.$iDebugLevel">
           <signal_objects object="player.primaryship" param="'UFO_UpdateDebugLevel'" />

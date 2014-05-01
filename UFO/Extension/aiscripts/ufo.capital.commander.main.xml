@@ -55,25 +55,31 @@
 
       <!-- Set all state variables -->
       <set_value name="$Fleet" exact="this.$UFO.$Fleet" />
-      <set_value name="$sCommand" exact="$Fleet.$lCommand.{1}" />
-      <set_value name="$aCommandArgs" exact="$Fleet.$lCommand.{2}" />
+      <set_value name="this.$UFO.$sCommand" exact="$Fleet.$lCommand.{1}" />
+      <set_value name="this.$UFO.$aCommandArgs" exact="$Fleet.$lCommand.{2}" />
 
-      <debug_text text="$sLogFormat.[player.age,'Started fleet commander script. Fleet ID: %1, command: \'%2\', command args: %3'.[$Fleet.$iId,$sCommand,$aCommandArgs]]" filter="error" chance="$iLogInfo" />
+      <debug_text text="$sLogFormat.[player.age,'Started fleet commander script. Fleet ID: %1, command: \'%2\', command args: %3'.[$Fleet.$iId,this.$UFO.$sCommand,this.$UFO.$aCommandArgs]]" filter="error" chance="$iLogInfo" />
 
       <!-- Now, we check for the different commands -->
-      <do_if value="$sCommand == global.$UFO.$Commands.$sEscort">
+      <do_if value="this.$UFO.$sCommand == global.$UFO.$Commands.$sEscort">
         <!-- Start default follow script for captain and tell it to escort the target ship -->
         <run_script name="'ufo.capital.captain.main'" sinceversion="1">
-          <param name="oEscortTarget" value="$aCommandArgs.{1}" />
+          <param name="oEscortTarget" value="this.$UFO.$aCommandArgs.{1}" />
         </run_script>
       </do_if>
-      <do_elseif value="$sCommand == global.$UFO.$Commands.$sMoveToZone">
+      <do_elseif value="this.$UFO.$sCommand == global.$UFO.$Commands.$sMoveToZone">
         <!-- Start default follow script for captain and tell it to move to the beacon -->
         <run_script name="'ufo.capital.commander.move.to.zone'" sinceversion="1"/>
       </do_elseif>
+
+      <remove_value name="this.$UFO.$sCommand" />
+      <remove_value name="this.$UFO.$aCommandArgs" />
     </actions>
   </attention>
   <on_abort>
     <debug_text text="$sLogFormat.[player.age,'Aborted script. Cleaning up state...']" filter="error" chance="$iLogInfo" />
+
+    <remove_value name="this.$UFO.$sCommand" />
+    <remove_value name="this.$UFO.$aCommandArgs" />
   </on_abort>
 </aiscript>

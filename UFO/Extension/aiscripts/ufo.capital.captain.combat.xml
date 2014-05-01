@@ -80,6 +80,7 @@
       <!-- The maximum distance we may be away from our target before we abort pursuing enemies -->
       <set_value name="$mAbortDist" exact="$mEngageDist + 5km" />
       <set_value name="$oCommander" exact="$Fleet.$oCommander" />
+      <set_value name="$mMaxTargetDist" exact="this.ship.size / 2" />
 
       <!-- Check if we are interested in fighting -->
       <set_value name="$bIsPassive" exact="$sAggressionLevel == global.$UFO.$Stances.$AggressionLevels.$sPassive" />
@@ -100,9 +101,6 @@
         <return value="false" />
       </do_if>
 
-      <set_value name="$oldPriorityTarget" exact="@this.$UFO.$oCombatPriorityTarget" />
-      <set_value name="this.$UFO.$oCombatPriorityTarget" exact="$oPriorityTarget" />
-
       <!-- Stop boosting in case we were -->
       <do_if value="$bBoosting">
         <debug_text text="$sLogFormat.[player.age,'Stopping boost...']" filter="error" chance="$iLogFinest" />
@@ -113,10 +111,13 @@
 
       <!-- Instead of flying towards the enemy directly (which bugs the game out sometimes) we move to a position close to it -->
       <select_flight_behaviour entity="this" evasive="false" result="$eBehaviour" />
+
+      <set_value name="$mDist" exact="this.ship.distanceto.{$oPriorityTarget}" />
       
       <!-- we only choose a new target position if our target changed -->
-      <do_if value="not this.$UFO.$pCombatTargetPos? or this.$UFO.$oCombatPriorityTarget != $oldPriorityTarget">
-        <get_safe_pos result="this.$UFO.$pCombatTargetPos" zone="$oPriorityTarget.zone" space="$oPriorityTarget.zone" radius="this.ship.size" object="$oPriorityTarget" min="500m" max="1000m" />
+      <do_if value="not this.$UFO.$pCombatTargetPos? or $mDist gt $mMaxTargetDist">
+        <!--<get_safe_pos result="this.$UFO.$pCombatTargetPos" zone="$oPriorityTarget.zone" space="$oPriorityTarget.zone" radius="this.ship.size" object="$oPriorityTarget" min="500m" max="1000m" />-->
+        <get_safe_pos result="this.$UFO.$pCombatTargetPos" zone="$oPriorityTarget.zone" space="$oPriorityTarget.zone" radius="0m" object="$oPriorityTarget" min="0m" max="$mMaxTargetDist" />
       </do_if>
 
       <debug_text text="$sLogFormat.[player.age,'Priority target %1 is at position %2. Calculated target position: %3.'.[$oPriorityTarget.knownname,$oPriorityTarget.position,this.$UFO.$pCombatTargetPos]]" filter="error" chance="$iLogFine" />
@@ -157,9 +158,9 @@
       <!-- Move towards target position -->
       <!-- TODO:
       <rotation value="$rRotation" />
-      <position value="this.$UFO.$pCombatTargetPos" />
        -->
-      <move_to object="this.ship" destination="$oPriorityTarget" flightbehaviour="flightbehaviour.bigfight" forcesteering="true" sinceversion="1">
+      <move_to object="this.ship" destination="$oPriorityTarget.zone" forcesteering="true" forceposition="true" finishonapproach="false" sinceversion="1">
+        <position value="this.$UFO.$pCombatTargetPos" />
         <interrupt>
           <conditions>
             <check_any>

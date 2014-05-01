@@ -113,7 +113,12 @@ Buttons.selectEscortShip = function (state)
 	local title = ReadText(99998,21) -- "Choose Ship to Escort"
 	local ships = Functions.getShipsForEscort(state)
 	
-	LibMJ:OpenMenu("LibMJ_ShipSelection",nil,title,ships)
+    local shipDescriptors = {}
+    for _, ship in ipairs(ships) do
+        table.insert(shipDescriptors, { ship = ship, selectable = true })
+    end
+
+	LibMJ:OpenMenu("LibMJ_ShipSelection",nil,title,shipDescriptors)
 end
 
 Buttons.selectZoneForMove = function (state)

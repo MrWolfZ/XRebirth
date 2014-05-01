@@ -59,7 +59,10 @@
           <do_all exact="$Fleet.$gShips.count" counter="$i">
             <set_value name="$oShip" exact="$Fleet.$gShips.{$i}" />
             <do_if value="@$oShip.exists and @$oShip.isoperational">
-              <add_to_group groupname="$gActiveShips" object="$oShip" />
+              <!-- We also check whether there are still UFO scripts running on the pilot of each ship -->
+              <do_if value="$oShip.pilot.exists and @$oShip.pilot.$UFO.$lActiveScripts.count gt 0">
+                <add_to_group groupname="$gActiveShips" object="$oShip" />
+              </do_if>
             </do_if>
           </do_all>
           <set_value name="$Fleet.$gShips" exact="$gActiveShips" />
@@ -219,8 +222,31 @@
               <start_script name="'ufo.start'" object="$oShip.defencenpc" />
             </do_if>
           </do_all>
+
+          <!-- Check if command changed and re-start scripts on commander if so -->
+          <set_value name="$sCurCommand" exact="@$Fleet.$oCommander.pilot.$UFO.$sCommand"/>
+          <set_value name="$aCurCommandArgs" exact="@$Fleet.$oCommander.pilot.$UFO.$aCommandArgs"/>
+          <set_value name="$bNewCommand" exact="false" />
+          <do_if value="$sCurCommand != $Fleet.$lCommand.{1}">
+            <set_value name="$aNewCommandArgs" exact="$Fleet.$lCommand.{2}" />
+            <do_if value="$aCurCommandArgs.count != $aNewCommandArgs.count">
+              <set_value name="$bNewCommand" exact="true" />
+            </do_if>
+            <do_else>
+              <!-- Iterate over command args and check if they changed -->
+              <do_all exact="$aCurCommandArgs.count" counter="$i">
+                <do_if value="$aCurCommandArgs.{$i} != $aNewCommandArgs.{$i}">
+                  <set_value name="$bNewCommand" exact="true" />
+                  <break />
+                </do_if>
+              </do_all>
+            </do_else>
+          </do_if>
           
-          <!-- TODO: check if command changed and re-start scripts on commander if so -->
+          <!-- Now, if we have a new command, we restart the commander script -->
+          <do_if value="$bNewCommand">
+            <start_script name="'ufo.start'" object="$Fleet.$oCommander.pilot" />
+          </do_if>
         </do_all>
       </actions>
     </cue>

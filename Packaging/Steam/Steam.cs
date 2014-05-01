@@ -30,9 +30,14 @@ namespace Packaging.Steam
             }
         }
 
+        public static DirectoryInfo GetXRebirthDirectory()
+        {
+            return new DirectoryInfo(string.Format(@"{0}\{1}", Steam.Path, @"steamapps\common\X Rebirth"));
+        }
+
         public static DirectoryInfo GetXRebirthModDirectory(string modName)
         {
-            var extensionsDirPath = string.Format(@"{0}\{1}\{2}", Steam.Path, @"steamapps\common\X Rebirth\extensions", modName);
+            var extensionsDirPath = string.Format(@"{0}\{1}\{2}", GetXRebirthDirectory().FullName, "extensions", modName);
             var di = new DirectoryInfo(extensionsDirPath);
             if (!di.Exists)
             {

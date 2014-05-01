@@ -30,11 +30,8 @@
       <t id="23">Choose Commander for Fleet"</t>
       <t id="24">Create New Fleet</t>
       <t id="25">Add Ships to Fleet</t>
-      
-      <t id="30">Needs Defence Officer(label used for capital ships that don't have defence officers)</t>
-      <t id="31">no %1(label used to indicate that a certain NPC type is needed)</t>
-      <t id="32">Fleet Commands(menu item label for fleet commands section)</t>
-      <t id="33">Attack Zone(menu item label for fleet command to attack a zone)</t>
+
+      <t id="30">no(label used to indicate that a certain NPC type is needed)</t>
       
       <!-- 100 - 199: Button labels -->
       <t id="100">Broadcast Stance</t>

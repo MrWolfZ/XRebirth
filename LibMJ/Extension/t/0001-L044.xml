@@ -25,6 +25,7 @@
 
       <!-- 1000 - 1999: Miscellaneous -->
       <t id="1000">Select(label selecting an element on the generic selection screens)</t>
+      <t id="1001">Loc</t>
 
       <!-- 9000 - 9999: Administration -->
       <t id="9000">Uninstall</t>

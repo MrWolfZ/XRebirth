@@ -148,8 +148,8 @@
           <debug_text text="$sLogFormat.[player.age,'Commander has moved away from current target position (%1m). Obtaining new target position in %2m...'.[$mTargetDistToCommander,$mTargetDistMax]]" filter="error" chance="$iLogFinest" />
 
           <!-- Get a safe position near our target -->
-          <create_position name="$oTargetPos" space="$oCommander.zone" object="$oCommander" min="$mMinDist" max="$mTargetDistMax" />
-          <!--<get_safe_pos result="$oTargetPos" zone="$oCommander.zone" space="$oCommander.zone" radius="this.ship.size" object="$oCommander" min="$mMinDist" max="$mTargetDistMax" />-->
+          <!--<create_position name="$oTargetPos" space="$oCommander.zone" object="$oCommander" min="$mMinDist" max="$mTargetDistMax" />-->
+          <get_safe_pos result="$oTargetPos" zone="$oCommander.zone" space="$oCommander.zone" radius="0m" object="$oCommander" min="0m" max="$mTargetDistMax" />
           <debug_text text="$sLogFormat.[player.age,'Obtained new target position in distance %1m to commander...'.[$oCommander.distanceto.{$oTargetPos}]]" filter="error" chance="$iLogFinest" />
 
           <!-- If the new position is farther away than allowed, that means there is no space near our commander -->

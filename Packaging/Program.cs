@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Packaging.Mods;
 
@@ -12,6 +14,13 @@ namespace Packaging
     {
         public static void Main(string[] args)
         {
+            var rebirthProc = Process.GetProcessesByName("XRebirth");
+            if (rebirthProc.Any())
+            {
+                rebirthProc[0].CloseMainWindow();
+                Thread.Sleep(1000);
+            }
+
             var basePath = args[0];
             var modNames = args[1];
 
@@ -32,6 +41,11 @@ namespace Packaging
 
                 ModPackager.PackageMod(mod, modDir);
             }
+
+            var rebirthExe = Steam.Steam.GetXRebirthDirectory().GetFiles().Single(fi => fi.Name == "XRebirth.exe");
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.FileName = rebirthExe.FullName;
+            Process.Start(startInfo);
         }
     }
 }

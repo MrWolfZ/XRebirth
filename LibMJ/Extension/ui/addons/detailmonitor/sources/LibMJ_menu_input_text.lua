@@ -100,6 +100,10 @@ Buttons.confirmInput = function (state)
 	-- this should set state.text
 	Helper.confirmEditBoxInput(state.bodyTable, 1, 1)
 
+    if not state.text or state.text == "" then
+        return
+    end
+
 	if state.followUpMenu then
 		LibMJ:OpenMenu(state.followUpMenu, nil, unpack(state.followUpMenuArgs), state.text)
 	else

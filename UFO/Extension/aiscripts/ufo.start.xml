@@ -70,6 +70,7 @@
         </do_else>
       </do_elseif>
       <do_elseif value="this.type == entitytype.commander">
+        <!--<set_avoid_collisions object="this.ship" enabled="false" />-->
         <!-- The captain of the fleet commander needs a different script -->
         <do_if value="this.ship == $Fleet.$oCommander">
           <run_script name="'ufo.capital.commander.main'" sinceversion="1" />
@@ -82,10 +83,12 @@
 
       <!-- Remove this script from the stack -->
       <remove_value name="this.$UFO.$lActiveScripts.{this.$UFO.$lActiveScripts.count}" />
+      <set_avoid_collisions object="this.ship" enabled="true" />
     </actions>
   </attention>
   <on_abort>
     <!-- Remove this script from the stack -->
     <remove_value name="this.$UFO.$lActiveScripts.{this.$UFO.$lActiveScripts.count}" />
+    <set_avoid_collisions object="this.ship" enabled="true" />
   </on_abort>
 </aiscript>
