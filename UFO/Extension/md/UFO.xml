@@ -87,7 +87,7 @@
         <set_value name="$iOldDebugLevel" exact="@$Config.$iDebugLevel" />
 
         <!-- UFO debug level -->
-        <set_value name="$Config.$iDebugLevel" exact="0" />
+        <set_value name="$Config.$iDebugLevel" exact="3" />
 
         <do_if value="$iOldDebugLevel != $Config.$iDebugLevel">
           <signal_objects object="player.primaryship" param="'UFO_UpdateDebugLevel'" />
@@ -155,7 +155,9 @@
       <delay min="4s" />
       <actions>
         <!-- Find all capital ships -->
-        <find_ship groupname="$gPlayerShips" space="player.galaxy" owner="faction.player" multiple="true" />
+        <find_ship groupname="$gPlayerShips" space="player.galaxy" owner="faction.player" multiple="true">
+          <match class="class.ship_xs" negate="true" />
+        </find_ship>
         <remove_from_group group="$gPlayerShips" object="player.primaryship" />
 
         <debug_text text="'Found %1 player owned ships. Removing legacy state...'.[$gPlayerShips.count]" filter="error" chance="100 * (global.$UFO.$iDebugLevel ge 3)" />

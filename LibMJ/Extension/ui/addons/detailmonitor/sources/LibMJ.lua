@@ -695,7 +695,7 @@ end
 function LibMJ.indexOf(t, el, comp)
 	comp = comp or (function (x, y) return x == y end)	
 	for i, item in ipairs(t) do
-		if comp(el, item) then
+		if comp(item, el) then
 			return i
 		end
 	end	

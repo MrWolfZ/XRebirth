@@ -43,7 +43,7 @@
         </do_else>
         
         <!-- LibMJ debug level -->
-        <set_value name="$dConfig.$iDebugLevel" exact="3" />
+        <set_value name="$dConfig.$iDebugLevel" exact="0" />
         
         <signal_cue_instantly cue="md.LibMJ.GenericInitialization" param="[$sName,$dConfig,$iMajorVersion,$iMinorVersion,$iBugfixVersion]" />
 

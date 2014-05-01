@@ -41,15 +41,15 @@
       <t id="104">Create Fleet</t>
 
       <!-- 200 - 299: Event monitor labels -->
-      <t id="5">Order Acknowledged</t>
-      <t id="18">Acknowledged: %1</t>
-      <t id="25">Real-time Fleet Status Report(notification caption for fleet status reports)</t>
-      <t id="26">commanding %1 ship\(s\)(text for fleet status reports)</t>
-      <t id="27">%1 capital ship\(s\)(text for fleet status reports)</t>
-      <t id="28">%1 fighter\(s\)(text for fleet status reports)</t>
-      <t id="29">detected %1 enemy ship\(s\)(text for fleet status reports)</t>
-      <t id="30">in zone %1(text for fleet status reports)</t>
-      <t id="31">Engaging enemy ship\(s\)(text for fleet status reports)</t>
+      <t id="200">Order Acknowledged</t>
+      <t id="201">Acknowledged: %1</t>
+      <t id="202">Real-time Fleet Status Report(notification caption for fleet status reports)</t>
+      <t id="203">consisting of %1 ship\(s\)(text for fleet status reports)</t>
+      <t id="204">%1 capital ship\(s\)(text for fleet status reports)</t>
+      <t id="205">%1 fighter\(s\)(text for fleet status reports)</t>
+      <t id="206">detected %1 enemy ship\(s\)(text for fleet status reports)</t>
+      <t id="207">in zone %1(text for fleet status reports)</t>
+      <t id="208">Engaging enemy ship\(s\)(text for fleet status reports)</t>
 
       <!-- 1000 - 1999: Miscellaneous -->
       <t id="1000">Passive</t>

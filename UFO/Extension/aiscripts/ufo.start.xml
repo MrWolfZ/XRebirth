@@ -39,6 +39,11 @@
         <save_retval name="iLogFine" variable="$iLogFine" />
         <save_retval name="iLogFinest" variable="$iLogFinest" />
       </run_script>
+      
+      <do_if value="not this.$UFO? or not @this.$UFO.$Fleet">
+        <debug_text filter="error" text="$sLogFormat.[player.age,'This script should only be run on entities with a valid UFO state container and that are part of a fleet.']" />
+        <return />
+      </do_if>
 
       <debug_text filter="error" text="$sLogFormat.[player.age,'Starting fleet scripts on entity \'%1\'...'.[this.knownname]]" chance="$iLogInfo" />
 

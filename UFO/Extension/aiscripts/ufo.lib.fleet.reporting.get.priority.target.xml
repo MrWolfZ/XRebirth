@@ -67,7 +67,7 @@
       <set_value name="$fHighestPriority" exact="-1" />
       <set_value name="$oPriorityTarget" exact="null" />
       <create_group groupname="$gAdditionalTargets" />
-      
+
       <!-- We check all fleet reports to find our priority target -->
       <do_all exact="$lReports.count" counter="$i" reverse="true">
         <set_value name="$oEnemy" exact="$lReports.{$i}.{1}" />
@@ -85,15 +85,15 @@
           <!-- If we found subtargets, we don't need to add the station -->
           <do_if value="$gStationComponents.count gt 0">
             <add_to_group groupname="$gAdditionalTargets" group="$gStationComponents" />
-            
+
             <do_if value="$fHighestPriority == -1">
               <set_value name="$oPriorityTarget" exact="$gStationComponents.{1}" />
             </do_if>
-            
+
             <continue />
           </do_if>
         </do_if>
-        
+
         <!-- Determine which priority is relevant for us -->
         <do_if value="not $bForDrone and [entitytype.commander,entitytype.defencecontrol].indexof.{this.type}">
           <set_value name="$fPriority" exact="$lReports.{$i}.{3}" />
@@ -101,12 +101,12 @@
         <do_else>
           <set_value name="$fPriority" exact="$lReports.{$i}.{4}" />
         </do_else>
-        
+
         <!-- We check if the target is relevant for us -->
         <set_value name="$bIsCap" exact="[class.ship_l,class.ship_xl,class.station].indexof.{$oEnemy.class}" />
         <set_value name="$mDist" exact="this.ship.distanceto.{$oEnemy}" />
         <do_if value="$mDist lt ($mEngageDist + ($bIsCap * $mCapShipOffset)) * $fReportLenienceFactor">
-          
+
           <!-- Check if we found a new priority target -->
           <do_if value="$fPriority gt $fHighestPriority">
             <set_value name="$oPriorityTarget" exact="$oEnemy" />
@@ -116,7 +116,7 @@
           <add_to_group groupname="$gAdditionalTargets" object="$oEnemy" />
         </do_if>
       </do_all>
-      
+
       <do_if value="$gAdditionalTargets.count gt 0">
         <set_value name="$sLabel" exact="'us'" />
         <do_if value="$bForDrone">
@@ -129,7 +129,16 @@
       <do_if value="$oPriorityTarget">
         <remove_from_group group="$gAdditionalTargets" object="$oPriorityTarget" />
       </do_if>
-      
+
+      <do_if value="not $Fleet.$tLastStatusReport?">
+        <set_value name="$Fleet.$tLastStatusReport" exact="0s" />
+      </do_if>
+
+      <!-- If there are enemy reports, we trigger a real-time status reports  -->
+      <do_if value="player.age - $Fleet.$tLastStatusReport gt 30s and $Fleet.$lReports.count gt 0">
+        <signal_objects object="player.primaryship" param="'UFO_FleetReport'" param2="$Fleet" />
+      </do_if>
+
       <!-- We then return our priority target and all other relevant targets -->
       <return value="$oPriorityTarget">
         <retval name="gAdditionalTargets" value="$gAdditionalTargets" />

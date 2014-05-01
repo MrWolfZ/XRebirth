@@ -399,12 +399,7 @@ Functions.rowProvider = function (state, rowCollection)
 		for i, fleet in ipairs(Fleets) do	
 			local ships = fleet.ships
 			local isExpanded = LibMJ:IsExpanded(#rowCollection + 1) or ExpandedFleets[i]
-
-		    -- we expand the fleets according to the saved state every time the fleet management menu is opened
-		    if ExpandedFleets[i] then
-			    LibMJ:ExpandRow(#rowCollection, true)
-		    end
-						
+			
 			local rowData = { ["Fleet"] = fleet, ["ValidForBroadcastStance"] = true }
 			local cells = {}
 			
@@ -453,6 +448,11 @@ Functions.rowProvider = function (state, rowCollection)
 			
 			local nrOfChildRows = #ships
 			table.insert(rowCollection, LibMJ:Row(cells, rowData, Helper.defaultHeaderBackgroundColor, false, nrOfChildRows))
+
+		    -- we expand the fleets according to the saved state every time the fleet management menu is opened
+		    if ExpandedFleets[i] then
+			    LibMJ:ExpandRow(#rowCollection, true)
+		    end
 			
 			state.fleetToRowIdx[fleet.id] = #rowCollection
 			

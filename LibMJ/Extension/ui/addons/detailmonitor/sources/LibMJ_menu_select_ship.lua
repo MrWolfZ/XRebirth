@@ -111,7 +111,7 @@ Functions.rowProvider = function (state, rowCollection)
 				local selectShipButtonLabel = ReadText(99997,1000) -- "Select"
 				local selectShipButtonScript = function (rowIdx, colIdx)				
 					table.insert(state.selectedShips, ship)
-					table.remove(category.ships, LibMJ.indexOf(category.ships, ship, function (s1, s2) return tostring(s1) == tostring(s2) end))
+					table.remove(category.ships, LibMJ.indexOf(category.ships, ship, function (descr, s2) return tostring(descr.ship) == tostring(s2) end))
 					
 					-- if multiple selection is allowed and ships are available, we continue, otherwise we close the menu
 					if state.chooseMultiple and #state.selectedShips < state.nrOfShips then

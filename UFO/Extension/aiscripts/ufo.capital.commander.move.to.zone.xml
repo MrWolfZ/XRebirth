@@ -250,33 +250,61 @@
         <!-- For large distances, we use the booster -->
         <do_else>
           <debug_text text="$sLogFormat.[player.age,'Zone \'%1\' is far away (%2m).'.[$oZone.knownname, $mDist]]" filter="error" chance="$iLogInfo" />
+          
+          <set_value name="$fMaxDiffYaw" exact="pi / 16" />
+          <set_value name="$fMaxDiffYawBoosting" exact="pi / 8" />
+          <set_value name="$fMaxDiffPitch" exact="pi / 16" />
+          <set_value name="$fMaxDiffPitchBoosting" exact="pi / 8" />
+
+          <create_object name="$oCrate" macro="macro.props_sm_container_xs_wares_macro" zone="$oZone">
+            <position value="position.[0,0,0]" />
+          </create_object>
+          
+          <!-- We check the optimal rotation to our target position -->
+          <create_position name="$x" object="$oCrate" space="$oZone" />
+          <create_position name="$y" object="this.ship" space="$oZone" />
+          <create_position name="$z" object="this.ship" space="this.ship.zone" />
+          <create_orientation name="$r" refobject="$oCrate" orientation="look_at">
+            <position value="$y" space="$oZone" />
+          </create_orientation>
+
+          <destroy_object explosion="false" object="$oCrate" />
+          
+          <!-- If we are already boosting, we check our rotation and if it is too far off, we stop boosting -->
+          <do_if value="$bBoosting">
+            <set_value name="$fDiffYaw" exact="this.ship.rotation.yaw - $r.yaw" />
+            <set_value name="$fDiffPitch" exact="this.ship.rotation.pitch - $r.pitch" />
+            <do_if value="($fDiffYaw lt -$fMaxDiffYawBoosting or $fDiffYaw gt $fMaxDiffYawBoosting) or ($fDiffPitch lt -$fMaxDiffPitchBoosting or $fDiffPitch gt $fMaxDiffPitchBoosting)">
+              <debug_text text="$sLogFormat.[player.age,'We are misaligned and boosting. Stopping boost...']" filter="error" chance="$iLogFine" />
+              <stop_boost object="this.ship" />
+              <set_value name="$bBoosting" exact="false" />
+            </do_if>
+          </do_if>
 
           <!-- The frequency of distance checks is dependent on navigation skill -->
-          <set_value name="$tSleep" min="3s" max="5s"/>
+          <set_value name="$tSleep" min="7s" max="10s"/>
           <set_value name="$tOffset" exact="5s - (1s * this.skill.navigation)"/>
           <set_value name="$tSleep" exact="$tSleep + $tOffset" />
-
-          <!-- When we are close to our target, we sleep only shortly to not overshoot -->
-          <do_if value="this.ship.distanceto.{$oTargetPos} lt ($mShortDistMax * 1.5)">
-            <set_value name="$tSleep" exact="3s" />
+          
+          <!-- On short distances we sleep only shortly to not overshoot our target -->
+          <do_if value="$mDist lt $mShortDistMax * 2">
+            <set_value name="$tSleep" exact="4s" />
           </do_if>
 
           <!-- If we haven't started boosting yet, we align ourselves to our target first, and then start boosting -->
           <do_if value="not $bBoosting">
             <debug_text text="$sLogFormat.[player.age,'Aligning with target in preparation for boost...'.[$oZone.knownname, $mDist]]" filter="error" chance="$iLogFine" />
 
-            <create_position name="$x" object="$oZone" space="this.ship.zone" />
-            <create_position name="$y" object="this.ship" space="this.ship.zone" />
-            <create_position name="$d" x="($x.x - $y.x)/10" y="($x.y - $y.y)/10" z="($x.z - $y.z)/10" />
-            <create_position name="$t" x="$x.x - $d.x" y="$x.y - $d.y" z="$x.z - $d.z" />
-            <create_orientation name="$r" refobject="$oZone" orientation="look_at">
-              <position value="$t" space="this.ship.zone" />
-            </create_orientation>
-
             <debug_text text="$sLogFormat.[player.age,'Current rotation: %1, Target rotation: %2.'.[this.ship.rotation,$r]]" filter="error" chance="$iLogFinest" />
 
-            <move_to object="this.ship" destination="this.ship.zone" avoid="false" finishonapproach="false" forcesteering="true" forcerotation="true" forceposition="true" sinceversion="1">
-              <position value="$y" />
+            <!-- 
+              As a small hack, we are setting the avoid collisions property to 
+              false before rotating, since it will otherwise not properly work 
+              in crowded areas 
+            -->
+            <set_avoid_collisions object="this.ship" enabled="false" />
+            <move_to object="this.ship" destination="this.ship.zone" avoid="false" finishonapproach="false" forcesteering="true" forcerotation="true" forceposition="false" sinceversion="1">
+              <position value="$z" />
               <rotation value="$r" />
               <interrupt>
                 <conditions>
@@ -288,11 +316,12 @@
               <!-- We also interrupt after $tSleep to react to any position change by our target -->
               <interrupt_after_time time="$tSleep" />
             </move_to>
+            <set_avoid_collisions object="this.ship" enabled="true" />
 
             <!-- Only if we are mostly aligned, so we start boosting -->
             <set_value name="$fDiffYaw" exact="this.ship.rotation.yaw - $r.yaw" />
-            <set_value name="$fMaxDiffYaw" exact="pi / 16" />
-            <do_if value="$fDiffYaw lt $fMaxDiffYaw and $fDiffYaw gt -$fMaxDiffYaw">
+            <set_value name="$fDiffPitch" exact="this.ship.rotation.pitch - $r.pitch" />
+            <do_if value="$fDiffYaw lt $fMaxDiffYaw and $fDiffYaw gt -$fMaxDiffYaw and $fDiffPitch lt $fMaxDiffPitch and $fDiffPitch gt -$fMaxDiffPitch">
               <debug_text text="$sLogFormat.[player.age,'Aligned with target. Boosting to it...'.[$oZone.knownname, $mDist]]" filter="error" chance="$iLogFine" />
               <start_boost object="this.ship" />
               <set_value name="$bBoosting" exact="true" />

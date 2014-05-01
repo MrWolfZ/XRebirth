@@ -15,7 +15,7 @@
     <!--
       Cue to show a realtime status report from the commander of a fleet.
     -->
-    <cue name="RealtimeFleetStatusReport" namespace="this">
+    <cue name="RealtimeFleetStatusReport" instantiate="true" namespace="this">
       <conditions>
         <!-- We support status reports when enemies are found and engaged -->
         <event_object_signalled object="player.primaryship" param="'UFO_FleetReport'" />
@@ -24,43 +24,50 @@
         <!-- Fetch the fleet we want to create a report for -->
         <set_value name="$Fleet" exact="event.param2" />
 
-        <debug_text text="'Generating status report for fleet (id = %1, name = %2, commander = %3, nr. of ships = %4, command data: %5)...'.[$Fleet.$iId, $Fleet.$sName, $Fleet.$oCommander.knownname, $Fleet.$gShips.count, $Fleet.$lCommand]" filter="error" chance="100 * (global.$UFO.$iDebugLevel ge 1)" />
+        <do_if value="not $Fleet.$tLastStatusReport?">
+          <set_value name="$Fleet.$tLastStatusReport" exact="0s" />
+        </do_if>
 
-        <set_value name="$iFollowCount" exact="0" />
-        <set_value name="$iCapFollowCount" exact="0" />
-        <do_all exact="$Fleet.$gShips.count" counter="$i">
-          <set_value name="$iFollowCount" operation="add" exact="[class.ship_l,class.ship_xl].indexof.{$Fleet.$gShips.{$i}.class} == 0" />
-          <set_value name="$iCapFollowCount" operation="add" exact="[class.ship_l,class.ship_xl].indexof.{$Fleet.$gShips.{$i}.class} gt 0" />
-        </do_all>
+        <!-- Check when the last status report was created -->
+        <do_if value="player.age - $Fleet.$tLastStatusReport gt 30s and $Fleet.$lReports.count gt 0">
+          <set_value name="$Fleet.$tLastStatusReport" exact="player.age" />
 
-        <!-- Find all enemies and their ship sizes -->
-        <set_value name="$iEnemyCount" exact="0" />
-        <set_value name="$iCapEnemyCount" exact="0" />
-        <do_all exact="$Fleet.$lReports.count" counter="$i">
-          <set_value name="$oEnemy" exact="$Fleet.$lReports.{$i}.{1}" />
-          <set_value name="$iEnemyCount" operation="add" exact="[class.ship_l,class.ship_xl,class.station].indexof.{$oEnemy.class} == 0" />
-          <set_value name="$iCapEnemyCount" operation="add" exact="[class.ship_l,class.ship_xl,class.station].indexof.{$oEnemy.class} gt 0" />
-        </do_all>
-        
-        <debug_text text="'Fleet has %1 reported enemy sightings.'.[$Fleet.$lReports.count]" filter="error" chance="100 * (global.$UFO.$iDebugLevel ge 3)" />
+          <debug_text text="'Generating status report for fleet (id = %1, name = %2, commander = %3, nr. of ships = %4, command data: %5)...'.[$Fleet.$iId, $Fleet.$sName, $Fleet.$oCommander.knownname, $Fleet.$gShips.count, $Fleet.$lCommand]" filter="error" chance="100 * (global.$UFO.$iDebugLevel ge 1)" />
 
-        <!-- We construct the message -->
+          <set_value name="$iFollowCount" exact="0" />
+          <set_value name="$iCapFollowCount" exact="0" />
+          <do_all exact="$Fleet.$gShips.count" counter="$i">
+            <set_value name="$iFollowCount" operation="add" exact="[class.ship_l,class.ship_xl].indexof.{$Fleet.$gShips.{$i}.class} == 0" />
+            <set_value name="$iCapFollowCount" operation="add" exact="[class.ship_l,class.ship_xl].indexof.{$Fleet.$gShips.{$i}.class} gt 0" />
+          </do_all>
 
-        <!-- Commander info -->
-        <set_value name="$aFleetSection" exact="[null,{99998,1007},$Fleet.$sName,null,null,null]" />
+          <!-- Find all enemies and their ship sizes -->
+          <set_value name="$iEnemyCount" exact="0" />
+          <set_value name="$iCapEnemyCount" exact="0" />
+          <do_all exact="$Fleet.$lReports.count" counter="$i">
+            <set_value name="$oEnemy" exact="$Fleet.$lReports.{$i}.{1}" />
+            <set_value name="$iEnemyCount" operation="add" exact="[class.ship_l,class.ship_xl,class.station].indexof.{$oEnemy.class} == 0" />
+            <set_value name="$iCapEnemyCount" operation="add" exact="[class.ship_l,class.ship_xl,class.station].indexof.{$oEnemy.class} gt 0" />
+          </do_all>
 
-        <!-- Fleet info -->
-        <set_value name="$aFleetSection" exact="[null,{99998,26}.[$iFollowCount + $iCapFollowCount],{99998,27}.[$iCapFollowCount],null,null,{99998,28}.[$iFollowCount]]" />
+          <debug_text text="'Fleet has %1 reported enemy sightings.'.[$Fleet.$lReports.count]" filter="error" chance="100 * (global.$UFO.$iDebugLevel ge 3)" />
 
-        <!-- Enemy info -->
-        <set_value name="$aEnemySection" exact="[null,{99998,29}.[$iEnemyCount + $iCapEnemyCount],{99998,27}.[$iCapEnemyCount],null,null,{99998,28}.[$iEnemyCount]]" />
+          <!-- We construct the message -->
 
-        <!-- Action info -->
-        <set_value name="$aActionSection" exact="[null,{99998,30}.[$Fleet.$oCommander.zone.knownname],{99998,31}]" />
+          <!-- Commander info -->
+          <set_value name="$aFleetInfoSection" exact="[null,'%1 \'%2\''.[{99998,1007},$Fleet.$sName],'%1 %2'.[{99998,1005},$Fleet.$oCommander.knownname],null,null,null]" />
 
-        <show_notification timeout="12s" caption="{99998,25}" queued="true" details="[$aFleetSection,$aFleetSection,$aEnemySection,$aActionSection]" />
+          <!-- Fleet info -->
+          <set_value name="$aFleetSection" exact="[null,{99998,203}.[$iFollowCount + $iCapFollowCount],{99998,204}.[$iCapFollowCount],null,null,{99998,205}.[$iFollowCount]]" />
 
-        <reset_cue cue="this" />
+          <!-- Enemy info -->
+          <set_value name="$aEnemySection" exact="[null,{99998,206}.[$iEnemyCount + $iCapEnemyCount],{99998,204}.[$iCapEnemyCount],null,null,{99998,205}.[$iEnemyCount]]" />
+
+          <!-- Action info -->
+          <set_value name="$aActionSection" exact="[null,{99998,207}.[$Fleet.$oCommander.zone.knownname],{99998,208}]" />
+
+          <show_notification timeout="15s" caption="{99998,202}" queued="true" details="[$aFleetInfoSection,$aFleetSection,$aEnemySection,$aActionSection]" />
+        </do_if>
       </actions>
     </cue>
 
