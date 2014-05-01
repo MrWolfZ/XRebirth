@@ -35,6 +35,10 @@ remove a dictionary simply use
 Extract and copy the "LibMJ" folder to the "Steam/steamapps/common/X Rebirth/extensions" folder (create the extensions 
 folder if you don't have it already).
 
+[size=4][b][color=cyan]=== For Modders ===[/color][/b][/size]
+
+You can find the sources in my [url=https://github.com/MrWolfZ/XRebirth]GitHub repository[/url].
+
 [size=4][b][color=cyan]=== Compatibility ===[/color][/b][/size]
 
 Since this is only a library, there are no compatibility issues.

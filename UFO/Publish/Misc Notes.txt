@@ -1,0 +1,87 @@
+﻿Fighter follow Fighter: 
+
+In-zone: Follow in formation
+Between zones: Warp to player exit location after delay determined pilot skill
+
+Capital follow fighter:
+
+In-zone: Use booster to close with player. Distance in which booster is used depenging on navigation skill
+Between zones: Use booster or jump with high navigation skill; course will constantly adjusted (more often with higher skill); will exit boost closer to target with higher skill
+Between sectors: Jump
+
+Fighter escort Fighter:
+
+Track enemies in given distance. Frequency of checks based on pilot combat skill
+(Future) make enemy prioritization based on pilot combat skill
+
+Capital escort Fighter:
+
+Track enemies in given distance. Frequency of checks based on captain combat skill
+Enemy prioritization accuracy based on captain combat skill
+
+Fleet behaviour:
+
+Ships are able to report enemy sightings to each other. If a report is received, 
+the pilot/captain needs time to react based on his combined combat & navigation skill.
+Reports are also delayed by having commanders that are not skilled leaders.
+
+Future plans:
+Make following-code zone-agnostic
+Make pilots and captains gain piloting skill by based on flying time
+Make pilots and captains gain combat skill by killing enemies
+
+Rewrite fighter attack AI
+
+Make capital ships need to buy ammunition
+
+Known issues:
+- there is a rare race condition that causes fighter-sized ships to not follow their commander. This is due to in-space zone transitions
+- somtimes, when a capital ship is following it's commander, it will begin 'sliding' around it's commander (happens especially in crowded spaces like zones). This is probably due to the way UFO determines the target position for the capital ship to come to a stop
+
+
+
+
+Have you thought about using a nearby enemies list and a valid target list to properly utilize the radar range of the different ships?
+
+For example use a gravidar check out to max radar range to store enemies in a nearby enemies group/list then filter that list by range before passing to valid target list.  This would allow you to create custom behavior for enemies in radar range but not in valid engagement range, like aggressive fleets moving to engage, or defensive/evasive fleets moving away to keep range while calling for help.
+
+
+    <cue name="ParallelTest" instantiate="true">
+      <conditions>
+        <event_object_signalled object="player.primaryship" param="'Parallel'" />
+      </conditions>
+      <actions>
+        <create_cue_actor name="$oParallelEntity" cue="this" />
+        <start_script name="event.param3" object="$oParallelEntity">
+          <param name="oCaller" value="event.param2" />
+        </start_script>
+      </actions>
+    </cue>
+
+
+
+
+
+        <find_summarised_turret groupname="$gTurrets" object="this.ship" multiple="true" />
+        <do_all min="$gTurrets.count" counter="$i" max="5">
+          <set_value name="$oTurret" exact="$gTurrets.{$i}" />
+          <debug_text text="'Turret %1: %2 - %3 - %4 - %5 - %6'.[$i,$oTurret.knownname,@$oTurret.ammo.macro.id,@$oTurret.ammo.macro.name,@$oTurret.ammo.macro.description,$res]" filter="error" chance="0" />
+          <!-- 
+          <aim_turret turret="$oTurret" target="player.primaryship" />
+          <fire_turret turret="$oTurret" />
+           -->
+        </do_all>
+
+
+
+		
+- better fleet ai, e.g. fighters not blindly attacking capital ships, fleets trying to stay close together, using tactics etc.
+- make crew gain piloting skill by based on flying time
+- make crew gain combat skill by fighting/killing enemies
+- implement commander-promotion if commander is killed
+- make more aspects skill-based
+- create unique traits for crew, that give special bonuses
+- better capital ship target prioritization
+- rewrite fighter attack AI
+- make capital ships need to buy ammunition (currently it is simply spawned, like it is in the stock game script)
+- choose formations for fighter squads

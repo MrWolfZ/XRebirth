@@ -1,0 +1,76 @@
+﻿[b]Author:[/b] MadJoker 
+[b]Version:[/b] V0.5.0 Beta
+[b]Date:[/b] 1st May 2014
+
+[b]X:Rebirth Version:[/b] 1.31
+
+[b]About[/b]
+
+Ever wondered why capital ships were just sitting idly while being bombarded by enemies? Ever were angry that your followers were being destroyed in distant sectors while you had long changed positions?
+
+If you can answer these questions with 'yes', then this mod is for you.
+
+This mod is a [b][i]complete rewrite from scratch[/i][/b] for the escort and capital ship combat scripts.
+
+[b]Details[/b]
+
+This mod adds a fleet management UI to the game, accessible via the Radial Menu -> 3-Universe -> 4 Fleet Management.
+
+The most basic functionality of this mod is to just assign some ships to the 'Player Fleet' and they will follow you and engage enemies based on the selected stances (see below). The ships will then not be part of your squad in terms of that game mechanic, so you won't see "In my squad" on the property monitor. But it will still behave correctly.
+
+UFO allows you to assign "stances" to your fleets, ships, and even single NPCs. Stances are seperated into "Aggression Level" and "Formation Mode".
+
+The following is a list of all aggression Levels:
+[list]
+[*][b]Passive:[/b] This mode forces the formation mode "Don't Break". In this mode captains and pilots will stay in formation with the fleet at all times, and defence officers will never fire at enemies.
+
+[*][b]Defensive:[/b] Captains and pilots will react to enemies based on their formation mode only if the fleet is attacked. Defence officers will fire upon enemies only if the fleet is attacked.
+
+[*][b]Offensive:[/b] Captains and pilots will react to enemies based on their formation mode as soon as enemies are detected. Defence officers will fire upon any enemy in range.
+[/list]
+The following is a list of all formation modes (note that defence officers ignore formation modes):
+[list]
+[*][b]Break:[/b] In this mode captains and pilots will break formation based on their aggression level.
+
+[*][b]Don't Break:[/b] In this mode, captains and pilots will always stay in formation and never fly towards the enemy, regardless of aggression level.
+[/list]
+UFO also allows you to give some basic commands to your fleet. Below is a list of all commands currently supported:
+[list]
+[*][b]Escort Ship:[/b] This orders the fleet to protect a chosen ship based on the stances of the fleet (e.g. if all ships are 'Passive' then this is just a follow command).
+
+[*][b]Move to Zone:[/b] This orders the fleet to move to a chosen zone. Enemies will be engaged based on the stances of the fleet (e.g. in 'Offensive' stance, this acts like an attack command).
+[/list]
+Should any of your fleets engage some enemies, they will send you a real-time status report with details about your fleet, the enemy ships, and the zone where the enemy was detected.
+
+This mod also features using crew skills. For example, highly skilled captains can make in-sector jumps with their capital ships, and ships in general react faster to changing circumstances based on their skills.
+
+Please be aware that this is a beta release and as such might melt your PC, destroy the world, or who knows. So please use it with caution.
+
+[b]Compatibility[/b]
+
+This mod is incompatible with any other mod that changes the pilot/captain/defence officer scripts. That being said, the UFO scripts only become active once a ship is assigned to a fleet. Therefore, as long as a ship is not in a fleet, all other mods should work correctly with that ship.
+
+[b]Uninstallation[/b]
+
+UFO features a one-click uninstallation routine. To access it, click the 'Info' icon in the top left corner of the Fleet Management menu and then select the 'Uninstall' button and follow the on-screen instructions (also available in the logbook).
+
+Note that this will cause all pilots/captains that were in a fleet when uninstalling, to not have any scripts running, and will start the stock capital defence script on all defence officers.
+
+[b]Known issues/limitations[/b]
+[list]
+[*]The Fleet Management menu is only available while not being docked
+[*]Ships without captain/pilot or defence officer cannot be added to fleets
+[*]Before using their boost for far away targets, capital ships will rotate to align with the target; however, this rotation does not take obstacles into account. Capital ships will also sometimes get stuck in crowded areas. To resolve this issue simply leave the area, since movement that happens outside of the player's area is not impeded by obstacles.
+[*]Zones and ships as targets for fleet commands can not yet be selected via the map, but instead use a list menu
+[*]Fleets lead by fighters cannot escort other fighters; this is due to how formations work in the game
+[*]Launched drones might not always correctly return to their carrier
+[*]When a fleet commander is killed, the fleet will be dissolved and you will have to create a new fleet
+[*]UFO cannot cope with crew changes; should you change some crew on a fleet ship, please re-assign the ship
+[/list]
+[b]Technical Details[/b]
+
+For texts I am using page 99998. 
+
+[b]Future Plans[/b]
+
+- none

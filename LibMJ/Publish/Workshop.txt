@@ -32,6 +32,10 @@ remove a dictionary simply use
 
 [*] Some generic UI screens for selecting a ship/zone through a list or capture some text input.
 [/list]
+[b]For Modders[/b]
+
+You can find the sources in my [url=https://github.com/MrWolfZ/XRebirth]GitHub repository[/url].
+
 [b]Compatibility[/b]
 
 Since this is only a library, there are no compatibility issues.

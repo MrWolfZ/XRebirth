@@ -4,11 +4,11 @@
 
 [b]X:Rebirth Version:[/b] 1.31
 
-[size=4][b][color=cyan]=== About ===[/color][/b][/size]
+[b][color=cyan]=== About ===[/color][/b]
 
 This is a set of library scripts and UIs that can be used by modders.
 
-[size=4][b][color=cyan]=== Details ===[/color][/b][/size]
+[b][color=cyan]=== Details ===[/color][/b]
 
 This library contains:
 [list]
@@ -32,47 +32,51 @@ remove a dictionary simply use
 
 [*] Some generic UI screens for selecting a ship/zone through a list or capture some text input.
 [/list]
-[size=4][b][color=cyan]=== Download ===[/color][/b][/size]
+[b][color=cyan]=== Download ===[/color][/b]
 
 [url=http://steamcommunity.com/sharedfiles/filedetails/?id=255150121][img]http://s14.directupload.net/images/140403/giupgyjg.png[/img][/url]
 
 [url=http://www.nexusmods.com/xrebirth/mods/385/][img]http://i.imgur.com/0cT9Kwu.png[/img][/url]
 
-[size=4][b][color=cyan]=== Installation (Nexus) ===[/color][/b][/size]
+For modders:
+
+You can find the sources in my [url=https://github.com/MrWolfZ/XRebirth]GitHub repository[/url].
+
+[b][color=cyan]=== Installation (Nexus) ===[/color][/b]
 
 Extract and copy the "LibMJ" folder to the "Steam\steamapps\common\X Rebirth\extensions" folder (create the extensions 
 folder if you don't have it already).
 
-[size=4][b][color=cyan]=== Installation (Workshop) ===[/color][/b][/size]
+[b][color=cyan]=== Installation (Workshop) ===[/color][/b]
 
 Simply subscribe to the mod.
 
-[size=4][b][color=cyan]=== Compatibility ===[/color][/b][/size]
+[b][color=cyan]=== Compatibility ===[/color][/b]
 
 Since this is only a library, there are no compatibility issues.
 
-[size=4][b][color=cyan]=== Uninstallation (Nexus) ===[/color][/b][/size]
+[b][color=cyan]=== Uninstallation (Nexus) ===[/color][/b]
 
 Simply delete the "LibMJ" folder from the "Steam\steamapps\common\X Rebirth\extensions" folder.
 
-[size=4][b][color=cyan]=== Uninstallation (Steam) ===[/color][/b][/size]
+[b][color=cyan]=== Uninstallation (Steam) ===[/color][/b]
 
 Simply unsubscribe from the mod.
 
-[size=4][b][color=cyan]=== Known limitations/issues ===[/color][/b][/size]
+[b][color=cyan]=== Known limitations/issues ===[/color][/b]
 [list]
 [*] none so far
 [/list]
-[size=4][b][color=cyan]=== Technical Details ===[/color][/b][/size]
+[b][color=cyan]=== Technical Details ===[/color][/b]
 
 For texts I am using page 99997. 
 
-[size=4][b][color=cyan]=== Release history ===[/color][/b][/size]
+[b][color=cyan]=== Release history ===[/color][/b]
 [list]
 [*] [b][2014-05-01 - V0.0.1][/b]
 Initial Release 
 [/list]
-[size=4][b][color=cyan]=== Future Plans ===[/color][/b][/size]
+[b][color=cyan]=== Future Plans ===[/color][/b]
 [list]
 [*] none
 [/list]
