@@ -4,58 +4,69 @@
 	
 	Author: MadJoker
   
-  Last Change:
-	Version: V0.4.3 Beta
-	Date: 25th Dec 2013
+	Last Change:
+	Version: V0.5.0 Beta
+	Date: 1st May 2014
   
-  X Rebirth version: 1.21
+	X Rebirth version: 1.31
 -->
+<diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<add sel="/language[@id='34']">
+		<page id="99998" title="UFO" descr="Text for UFO mod." voice="no">
+			<!-- 1-99: Radial menu item and UI menu titles labels -->
+			<t id="1">Fleet Management</t>
+			<t id="2">Fleets n/a while docked(used to indicate fleet management cannot be done while docked yet)</t>
+			<t id="3">No fleets detected(notification text for fleet report if no fleets exist)</t>
 
-<diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="rfc5261.xsd">
-  <add sel="/language">
-    <page id="99998" title="UFO" descr="Text for UFO mod." voice="no">
-      <t id="1">Manage Fleets</t>
-      <t id="2">Assign to Commander</t>
-      <t id="3">Choose 1 or more Subordinates(label used for help text during selection)</t>
-      <t id="4">Choose Commander(label used for help text during selection)</t>
-      <t id="5">Order Acknowledged</t>
-      <t id="6">Subordinate(label used in order confirmation)</t>
-      <t id="7">Commander(label used in order confirmation)</t>
-      <t id="8">Can't assign to subordinate(label used to prevent cyclic dependencies)</t>
-      <t id="9">Needs Defence Officer(label used for capital ships that don't have defence officers)</t>
-      <t id="10">Fleets n/a while docked(used to indicate fleet management cannot be done while docked yet)</t>
-      <t id="11">Broadcast Stance(menu item label)</t>
-      <t id="12">Follow(peaceful follow order)</t>
-      <t id="13">Defensive(passive escort order)</t>
-      <t id="14">Defensive \(Don't break\)(label used to indicate that captains should not break formation when detecting enemies)</t>
-      <t id="15">Offensive(aggressive escort order)</t>
-      <t id="16">Offensive \(Don't break\)(label used to indicate that captains should not break formation when detecting enemies)</t>
-      <t id="17">Choose commander that should broadcast the stance(help text for order broadcasting)</t>
-      <t id="18">Acknowledged: %1</t>>
-      <t id="19">Set Stance(menu item label)</t>
-      <t id="20">Fleet Report(menu item label to show all stances for all NPCs in the player's fleet)</t>
-      <t id="21">Active Stances(notification caption)</t>
-      <t id="22">no %1(label used to indicate that a certain NPC type is needed)</t>
-      <t id="23">Choose the maximum enemy engagement range(help text for engagement distance selection)</t>
-      <t id="24">No fleets detected(notification text for fleet report if no fleets exist)</t>
-      <t id="25">Real-time Fleet Status Report(notification caption for fleet status reports)</t>
-      <t id="26">commanding %1 ship\(s\)(text for fleet status reports)</t>
-      <t id="27">%1 capital ship\(s\)(text for fleet status reports)</t>
-      <t id="28">%1 fighter\(s\)(text for fleet status reports)</t>
-      <t id="29">detected %1 enemy ship\(s\)(text for fleet status reports)</t>
-      <t id="30">in zone %1(text for fleet status reports)</t>
-      <t id="31">Engaging enemy ship\(s\)(text for fleet status reports)</t>
-      <t id="32">Fleet Commands(menu item label for fleet commands section)</t>
-      <t id="33">Attack Zone(menu item label for fleet command to attack a zone)</t>
-      <t id="34">Choose commander to execute the command(help text for fleet commands)</t>
-      <t id="35">is executing command(text for 'attack zone' ack notification)</t>
-      <t id="36">Remove from Commander(menu item label for removing a ship from a fleet)</t>
-      <t id="999">Not supported yet(label used in case player is trying to assign fighter to capital ship)</t>
-      <t id="9995">Successfully uninstalled UFO V%1.\nPlease save the game, close Rebirth, delete the UFO folder from your extensions folder, then load and save your game.</t>
-      <t id="9996">Please note that the currently installed UFO version is an experimental release. If you experience any bugs, please report them on the Egosoft forums or on the Nexus.</t>
-      <t id="9997">Installing UFO V%1...</t>
-      <t id="9998">Detected UFO update: V%1 -> V%2\nPlease save the game \(in a new slot\) and load it again.</t>
-      <t id="9999">Updated UFO configuration found....Update successful!</t>
-    </page>
-  </add>
+			<t id="10">Choose Stance</t>
+			<t id="11">Choose Stance for</t>
+			<t id="12">Aggression Level</t>
+			<t id="13">Formation Mode</t>
+			<t id="14">Max. Engagement Distance</t>
+
+			<t id="20">Choose Command for Fleet</t>
+			<t id="21">Choose Ship to Escort</t>
+			<t id="22">Choose Target Zone</t>
+			<t id="23">Choose Commander for Fleet</t>
+			<t id="24">Create New Fleet</t>
+			<t id="25">Add Ships to Fleet</t>
+
+			<t id="30">no(label used to indicate that a certain NPC type is needed)</t>
+
+			<!-- 100 - 199: Button labels -->
+			<t id="100">Broadcast Stance</t>
+			<t id="101">Escort Ship</t>
+			<t id="102">Move to Zone</t>
+			<t id="103">Command</t>
+			<t id="104">Create Fleet</t>
+
+			<!-- 200 - 299: Event monitor labels -->
+			<t id="200">Order Acknowledged</t>
+			<t id="201">Acknowledged: %1</t>
+			<t id="202">Real-time Fleet Status Report(notification caption for fleet status reports)</t>
+			<t id="203">consisting of %1 ship\(s\)(text for fleet status reports)</t>
+			<t id="204">%1 capital ship\(s\)(text for fleet status reports)</t>
+			<t id="205">%1 fighter\(s\)(text for fleet status reports)</t>
+			<t id="206">detected %1 enemy ship\(s\)(text for fleet status reports)</t>
+			<t id="207">in zone %1(text for fleet status reports)</t>
+			<t id="208">Engaging enemy ship\(s\)(text for fleet status reports)</t>
+
+			<!-- 1000 - 1999: Miscellaneous -->
+			<t id="1000">Passive</t>
+			<t id="1001">Defensive</t>
+			<t id="1002">Aggressive</t>
+			<t id="1003">Break</t>
+			<t id="1004">Don't break</t>
+			<t id="1005">Commander</t>
+			<t id="1006">New Fleet</t>
+			<t id="1007">Fleet</t>
+			<t id="1008">Player Fleet</t>
+
+			<!-- 9000 - 9999: Administration -->
+			<t id="9000">UFO Configuration</t>
+			<t id="9001">Not supported yet(label used in case player is trying to assign fighter to capital ship)</t>
+			<t id="9998">Thank you for upgrading to UFO V0.5.0. This version features a brand new UI accessible via: Radial Menu -> 3-Universe -> 4-Fleet Management.\nHafe vun playing!</t>
+			<t id="9999">Thank you for installing UFO. You can access the main functions of this mod via: Radial Menu -> 3-Universe -> 4-Fleet Management.\nHafe vun playing!</t>
+		</page>
+	</add>
 </diff>

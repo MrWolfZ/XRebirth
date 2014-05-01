@@ -4,11 +4,11 @@
 	
 	Author: MadJoker
   
-  Last Change:
-	Version: V0.4.3 Beta
-	Date: 25th Dec 2013
+	Last Change:
+	Version: V0.5.0 Beta
+	Date: 1st May 2014
   
-  X Rebirth version: 1.21
+	X Rebirth version: 1.31
 -->
 <mdscript name="UFO_Management" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/md.xsd">
   <cues>
@@ -29,7 +29,7 @@
 
           <create_cue_actor name="$Fleet" cue="md.LibMJ.DictionaryContainer" />
           <set_value name="$Fleet.$iId" exact="1" />
-          <set_value name="$Fleet.$sName" exact="'Player Fleet'" />
+          <set_value name="$Fleet.$sName" exact="{99998,1008}" />
           <set_value name="$Fleet.$oCommander" exact="player.primaryship" />
           <add_to_group groupname="$Fleet.$gShips" object="player.primaryship" />
           <set_value name="$Fleet.$lCommand" exact="[global.$UFO.$Commands.$sEscort,[player.primaryship]]" />
@@ -66,6 +66,11 @@
             </do_if>
           </do_all>
           <set_value name="$Fleet.$gShips" exact="$gActiveShips" />
+					
+					<!-- If there are no ships in the fleet anymore, we ignore it -->
+					<do_if value="not @$Fleet.$oCommander.exists or not @$Fleet.$oCommander.isoperational or $gActiveShips.count == 0">
+						<continue />
+					</do_if>
 
           <append_to_list name="$lIds" exact="$Fleet.$iId" />
           <append_to_list name="$lNames" exact="$Fleet.$sName" />
@@ -183,6 +188,11 @@
             <!-- We only abort the active scripts, if there were actually some fleet scripts running, as to not mess up any other scripts -->
             <do_if value="$iActiveScripts gt 0">
               <abort_scripts entity="$oEntity" />
+							
+							<!-- For defence officers, we re-activate the stock script -->
+							<do_if value="$oEntity.type == entitytype.defencenpc">
+								<start_script name="'fight.defend.capital'" object="$oEntity" />
+							</do_if>
             </do_if>
 
             <!-- Then, we can dispose of the UFO state container -->

@@ -4,11 +4,11 @@
 	
 	Author: MadJoker
   
-  Last Change:
-	Version: V0.4.3 Beta
-	Date: 20th Apr 2014
+	Last Change:
+	Version: V0.5.0 Beta
+	Date: 1st May 2014
   
-  X Rebirth version: 1.30
+	X Rebirth version: 1.31
 -->
 
 <!--	
@@ -87,7 +87,7 @@
         <set_value name="$iOldDebugLevel" exact="@$Config.$iDebugLevel" />
 
         <!-- UFO debug level -->
-        <set_value name="$Config.$iDebugLevel" exact="3" />
+        <set_value name="$Config.$iDebugLevel" exact="0" />
 
         <do_if value="$iOldDebugLevel != $Config.$iDebugLevel">
           <signal_objects object="player.primaryship" param="'UFO_UpdateDebugLevel'" />

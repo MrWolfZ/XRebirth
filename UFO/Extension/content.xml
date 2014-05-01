@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<content id="ws_247004923" name="Ultimate Fleet Overhaul" description="Custom fleet AI for more realistic behaviour" author="Mad_Joker" version="043" date="2014-04-08" save="true" sync="false" lastupdate="1396939102">
-  <!-- Requires minimum game version 1.25 -->
-  <dependency version="125"/>
+<content id="ws_247004923" name="Ultimate Fleet Overhaul" description="Custom fleet AI for more realistic behaviour" author="Mad_Joker" version="050" date="2014-05-01" save="false" sync="false" lastupdate="1396939102">
+  <!-- Requires minimum game version 1.30 -->
+  <dependency version="130"/>
+	<!-- Requires LibMJ, minimum version 0.01 -->
+	<dependency id="ws_255150121" version="001" />
   <text language="7" name="Ultimate Fleet Overhaul" description="Custom fleet AI for more realistic behaviour" author="MadJoker"/>
   <text language="33" name="Ultimate Fleet Overhaul" description="IA des flottes modifiée pour un comportement plus réaliste" author="MadJoker"/>
   <text language="34" name="Ultimate Fleet Overhaul" description="Custom fleet AI for more realistic behaviour" author="MadJoker"/>

@@ -69,6 +69,7 @@
     <Content Include="Extension\ui\addons\detailmonitor\detailmonitor.xml" />
     <Content Include="Publish\Forums.txt" />
     <Content Include="Publish\Images\logo-base.png" />
+    <Content Include="Publish\Images\logo-square.png" />
     <Content Include="Publish\Images\logo.png" />
     <Content Include="Publish\Nexus.txt" />
     <Content Include="Publish\Release Post.txt" />

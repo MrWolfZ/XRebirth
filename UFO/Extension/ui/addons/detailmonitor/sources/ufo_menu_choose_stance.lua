@@ -1,3 +1,15 @@
+--[[
+	This file is part of the X Rebirth UFO mod.
+	
+	Author: MadJoker
+  
+	Last Change:
+	Version: V0.5.0 Beta
+	Date: 1st May 2014
+  
+	X Rebirth version: 1.31
+--]]
+
 -- persistent state
 local Functions, Buttons = {}, {}
 

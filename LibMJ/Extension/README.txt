@@ -5,6 +5,7 @@ Date: 1st May 2014
 X Rebirth version: 1.31
 
 http://www.nexusmods.com/xrebirth/mods/385/
+http://steamcommunity.com/sharedfiles/filedetails/?id=255150121
 
 === About ===
 
