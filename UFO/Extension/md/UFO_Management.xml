@@ -58,13 +58,19 @@
           <create_group groupname="$gActiveShips" />
           <do_all exact="$Fleet.$gShips.count" counter="$i">
             <set_value name="$oShip" exact="$Fleet.$gShips.{$i}" />
-            <do_if value="@$oShip.exists and @$oShip.isoperational and @$oShip != player.primaryship">
+            <do_if value="@$oShip.exists and @$oShip.isoperational">
               <!-- We also check whether there are still UFO scripts running on the pilot of each ship -->
               <do_if value="$oShip.pilot.exists and @$oShip.pilot.$UFO.$lActiveScripts.count gt 0">
                 <add_to_group groupname="$gActiveShips" object="$oShip" />
               </do_if>
             </do_if>
           </do_all>
+					
+					<!-- Make sure the player fleet contains the Skunk -->
+					<do_if value="$Fleet.$iId == 1">
+						<add_to_group groupname="$gActiveShips" object="player.primaryship" />
+					</do_if>
+					
           <set_value name="$Fleet.$gShips" exact="$gActiveShips" />
 					
 					<!-- If there are no ships in the fleet anymore, we ignore it -->
@@ -190,7 +196,7 @@
               <abort_scripts entity="$oEntity" />
 							
 							<!-- For defence officers, we re-activate the stock script -->
-							<do_if value="$oEntity.type == entitytype.defencenpc">
+							<do_if value="$oEntity.type == entitytype.defencecontrol">
 								<start_script name="'fight.defend.capital'" object="$oEntity" />
 							</do_if>
             </do_if>

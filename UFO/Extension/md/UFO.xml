@@ -25,10 +25,10 @@
 	i - Integer
 	s - String
 	f - Float or Double
-  b - Boolean
-  g - Group
-  m - Distance
-  t - Time
+	b - Boolean
+	g - Group
+	m - Distance
+	t - Time
   
   There are only two exceptions: 
   1) counting variables in loops usually take the form of $i or $j
@@ -79,6 +79,14 @@
         <do_if value="not global.$UFO?">
           <create_cue_actor name="$Config" cue="md.LibMJ.DictionaryContainer" />
           <set_value name="global.$UFO" exact="$Config" />
+					
+					<!-- We also check old version numbers for backwards compatiblity -->
+					<do_if value="global.$iUFO_MajorVersion?">
+						<set_value name="$Config.$iMajorVersion" exact="global.$iUFO_MajorVersion" />
+						<set_value name="$Config.$iMinorVersion" exact="global.$iUFO_MinorVersion" />
+						<set_value name="$Config.$iBugfixVersion" exact="global.$iUFO_BugfixVersion" />
+						<set_value name="$Config.$sVersion" exact="global.$sUFO_Version" />
+					</do_if>
         </do_if>
         <do_else>
           <set_value name="$Config" exact="global.$UFO" />

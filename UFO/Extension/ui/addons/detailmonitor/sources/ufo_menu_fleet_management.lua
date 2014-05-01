@@ -565,7 +565,7 @@ Functions.rowProvider = function (state, rowCollection)
 			end
 		end
 	else
-		table.insert(rowCollection, LibMJ:Row({ LibMJ:Cell(ReadText(99998, 3)) }, nil, 7)) -- No fleets detected
+		table.insert(rowCollection, LibMJ:Row({ LibMJ:Cell(ReadText(99998, 3, nil, 9)) }, nil, nil, true)) -- No fleets detected
 	end
 
 	-- we also reset the global expand states

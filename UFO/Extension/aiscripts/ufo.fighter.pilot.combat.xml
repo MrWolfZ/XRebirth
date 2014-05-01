@@ -91,7 +91,7 @@
         <run_script name="'fight.attack.object.fighter'" sinceversion="1">
           <param name="primarytargets" value="$gPrimaryTargets" />
           <param name="escortees" value="$Fleet.$gShips" />
-          <param name="allowothertargets" value="false" />
+          <param name="allowothertargets" value="true" />
         </run_script>
 
         <return value="true" />
