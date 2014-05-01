@@ -54,12 +54,6 @@
     <None Include="Extension\ui\addons\detailmonitor\sources\LibMJ_stack.lua" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Extension\aiscripts\lib.dict.add.xml" />
-    <Content Include="Extension\aiscripts\lib.dict.containskey.xml" />
-    <Content Include="Extension\aiscripts\lib.dict.get.xml" />
-    <Content Include="Extension\aiscripts\lib.dict.remove.xml" />
-    <Content Include="Extension\aiscripts\mj.lib.create.dict.xml" />
-    <Content Include="Extension\aiscripts\mj.lib.dispose.dict.xml" />
     <Content Include="Extension\aiscripts\mj.lib.log.xml" />
     <Content Include="Extension\content.xml" />
     <Content Include="Extension\md\LibMJ.xml" />

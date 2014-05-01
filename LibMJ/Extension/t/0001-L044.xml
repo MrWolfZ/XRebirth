@@ -4,13 +4,12 @@
 	
 	Author: MadJoker
   
-  Last Change:
-	Version: V0.1.0
-	Date: 20th Apr 2014
+	Last Change:
+	Version: V0.0.1
+	Date: 1st May 2014
   
-  X Rebirth version: 1.30
+	X Rebirth version: 1.31
 -->
-
 <diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="rfc5261.xsd">
   <add sel="/language[@id='44']">
     <page id="99997" title="LibMJ" descr="Texts for LibMJ script library." voice="no">
