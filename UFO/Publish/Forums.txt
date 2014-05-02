@@ -50,7 +50,7 @@ Please be aware that this is a beta release and as such might melt your PC, dest
 
 [url=http://steamcommunity.com/sharedfiles/filedetails/?id=247004923][img]http://s14.directupload.net/images/140403/giupgyjg.png[/img][/url]
 
-[url=http://www.nexusmods.com/xrebirth/mods/278/][img]http://i.imgur.com/0cT9Kwu.png[/img][/url].
+[url=http://www.nexusmods.com/xrebirth/mods/278/][img]http://i.imgur.com/0cT9Kwu.png[/img][/url]
 
 [b][color=cyan]=== Installation (Nexus) ===[/color][/b]
 
@@ -132,7 +132,7 @@ Added uninstallation script
 Compatibility update for game version 1.25
 Moved fleet menu to MAINMENU/3/4
 Disabled in-zone boosting since it caused issues for many player
-- [2014-05-21 - V0.5.0 Beta]
+- [2014-05-01 - V0.5.0 Beta]
 Major rewrite of almost everything in the mod
 Added Fleet Management UI
 

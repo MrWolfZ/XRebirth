@@ -152,7 +152,7 @@ For texts I am using page 99998.
 	Compatibility update for game version 1.25
 	Moved fleet menu to MAINMENU/3/4
 	Disabled in-zone boosting since it caused issues for many player
- - [2014-05-21 - V0.5.0 Beta]
+ - [2014-05-01 - V0.5.0 Beta]
 	Major rewrite of almost everything in the mod
 	Added Fleet Management UI
 
