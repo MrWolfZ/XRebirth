@@ -10,7 +10,7 @@
   
 	X Rebirth version: 1.31
 -->
-<mdscript name="UFO_Management" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/md.xsd">
+<mdscript name="UFO_Management" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/md/md.xsd">
   <cues>
     <!--
       Cue for managing fleets via the corresponding menu.
@@ -42,6 +42,8 @@
           <set_value name="player.copilot.$UFO.$Fleet" exact="$Fleet" />
         </do_if>
 
+        <set_value name="player.entity.$UFO" exact="global.$UFO" />
+
         <debug_text filter="error" text="'Opening UFO fleet management menu...'" chance="100 * (global.$UFO.$iDebugLevel ge 1)" />
 
         <!-- Extract fleet information -->
@@ -66,17 +68,17 @@
             </do_if>
           </do_all>
 					
-					<!-- Make sure the player fleet contains the Skunk -->
-					<do_if value="$Fleet.$iId == 1">
-						<add_to_group groupname="$gActiveShips" object="player.primaryship" />
-					</do_if>
+		  <!-- Make sure the player fleet contains the Skunk -->
+		  <do_if value="$Fleet.$iId == 1">
+			  <add_to_group groupname="$gActiveShips" object="player.primaryship" />
+		  </do_if>
 					
           <set_value name="$Fleet.$gShips" exact="$gActiveShips" />
 					
-					<!-- If there are no ships in the fleet anymore, we ignore it -->
-					<do_if value="not @$Fleet.$oCommander.exists or not @$Fleet.$oCommander.isoperational or $gActiveShips.count == 0">
-						<continue />
-					</do_if>
+		  <!-- If there are no ships in the fleet anymore, we ignore it -->
+		  <do_if value="not @$Fleet.$oCommander.exists or not @$Fleet.$oCommander.isoperational or $gActiveShips.count == 0">
+			  <continue />
+		  </do_if>
 
           <append_to_list name="$lIds" exact="$Fleet.$iId" />
           <append_to_list name="$lNames" exact="$Fleet.$sName" />
@@ -111,7 +113,7 @@
         <remove_value name="$aReturn" />
 
         <add_conversation_view view="closeupdetailmonitor" />
-        <open_conversation_menu menu="LibMJ" param="['UFOFleetManagement',$lIds,$lNames,$lCommanders,$lShipLists,$lCommands,$gPlayerShips.list,$lStateContainers,player.copilot,global.$UFO.$iDebugLevel]" />
+        <open_conversation_menu menu="LibMJ" param="['UFOFleetManagement','gUFO_MenuFleetManagement_close',$lIds,$lNames,$lCommanders,$lShipLists,$lCommands,$gPlayerShips.list,$lStateContainers,player.copilot,global.$UFO.$iDebugLevel]" />
       </actions>
     </cue>
 
@@ -120,11 +122,21 @@
     -->
     <cue name="FleetManagement" instantiate="true" namespace="this">
       <conditions>
-        <event_cue_signalled />
+        <check_any>
+          <event_conversation_next_section section="gUFO_MenuFleetManagement_close" />
+          <event_cue_signalled />
+        </check_any>
       </conditions>
       <actions>
+        <do_if value="event.param == 'gUFO_MenuFleetManagement_close'">
+          <set_value name="$aReturnArgs" exact="event.param2" />
+        </do_if>
+        <do_else>
+          <set_value name="$aReturnArgs" exact="event.param" />
+        </do_else>
+        
         <!-- First, we check whether the debug level was updated -->
-        <set_value name="$iDebugLevel" exact="event.param.{9}" />
+        <set_value name="$iDebugLevel" exact="$aReturnArgs.{9}" />
 
         <do_if value="$iDebugLevel != global.$UFO.$iDebugLevel">
           <set_value name="global.$UFO.$iDebugLevel" exact="$iDebugLevel" />
@@ -140,11 +152,11 @@
         <set_value name="global.$UFO.$lFleets" exact="[]" />
 
         <!-- Read return values and create the corresponding fleets -->
-        <set_value name="$lIds" exact="event.param.{3}" />
-        <set_value name="$lNames" exact="event.param.{4}" />
-        <set_value name="$lCommanders" exact="event.param.{5}" />
-        <set_value name="$lShipLists" exact="event.param.{6}" />
-        <set_value name="$lCommands" exact="event.param.{7}" />
+        <set_value name="$lIds" exact="$aReturnArgs.{3}" />
+        <set_value name="$lNames" exact="$aReturnArgs.{4}" />
+        <set_value name="$lCommanders" exact="$aReturnArgs.{5}" />
+        <set_value name="$lShipLists" exact="$aReturnArgs.{6}" />
+        <set_value name="$lCommands" exact="$aReturnArgs.{7}" />
 
         <debug_text filter="error" text="'Re-initializing UFO fleet container with %1 fleets...'.[$lIds.count]" chance="100 * (global.$UFO.$iDebugLevel ge 2)" />
         <do_all exact="$lIds.count" counter="$i">
@@ -163,7 +175,7 @@
         </do_all>
 
         <!-- Then, we read and parse the entity state containers -->
-        <set_value name="$lStateContainers" exact="event.param.{8}" />
+        <set_value name="$lStateContainers" exact="$aReturnArgs.{8}" />
         <signal_cue_instantly cue="RestoreStateContainers" param="[this,$lStateContainers]" />
         <signal_cue_instantly cue="DeactivateFleetScripts" param="[$aReturn.{1}]" />
         <remove_value name="$aReturn" />
@@ -195,10 +207,10 @@
             <do_if value="$iActiveScripts gt 0">
               <abort_scripts entity="$oEntity" />
 							
-							<!-- For defence officers, we re-activate the stock script -->
-							<do_if value="$oEntity.type == entitytype.defencecontrol">
-								<start_script name="'fight.defend.capital'" object="$oEntity" />
-							</do_if>
+			  <!-- For defence officers, we re-activate the stock script -->
+			  <do_if value="$oEntity.type == entitytype.defencecontrol">
+				  <start_script name="'fight.defend.capital'" object="$oEntity" />
+			  </do_if>
             </do_if>
 
             <!-- Then, we can dispose of the UFO state container -->

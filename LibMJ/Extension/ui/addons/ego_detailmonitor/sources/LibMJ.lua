@@ -51,6 +51,7 @@ local function init()
 	for _, func in ipairs(registerFuncs) do
 		func()
 	end
+
 	registerFuncs = nil
 
 	Menus = Menus or {}
@@ -85,14 +86,16 @@ LibMJ.onShowMenu = function ()
 
 	local self = LibMJ
 	local startMenu = self.param[1]
+    local returnSection = self.param[2]
 	local args = self.param
 	self.param = nil
+	table.remove(args, 2)
 	table.remove(args, 1)
 	
 	self.stack = self.stack or Stack:Create()
 	
 	-- we put an empty container on the stack to catch return parameters
-	self.stack:push({ menu = { name = startMenu, onReturnArgsReceived = LibMJ.exitMenu } })
+	self.stack:push({ menu = { name = startMenu, returnSection = returnSection, onReturnArgsReceived = LibMJ.exitMenu } })
 	self:OpenMenu(startMenu, nil, args)
 end
 
@@ -101,8 +104,12 @@ LibMJ.exitMenu = function (state, isClosingAll, returnArgs)
 	-- we need to pop our state
 	local state = self.stack:pop()
 	
-	-- we can then return the return args
-	Helper.closeMenuAndReturn(self, false, { state.menu.name, (self.closeAll and "close") or "back", unpack(returnArgs) })
+	-- we can then return the returnArgs
+    if state.menu.returnSection then
+	  Helper.closeMenuForSection(self, false, state.menu.returnSection, { state.menu.name, (self.closeAll and "close") or "back", unpack(returnArgs) })
+    else
+      Helper.closeMenuAndReturn(self, false, { state.menu.name, (self.closeAll and "close") or "back", unpack(returnArgs) })
+    end
 end
 
 -- either return to last menu or close altogether
@@ -141,7 +148,6 @@ end
 LibMJ.onRowChanged = function (rowIdx, rowData)		
 	local self = LibMJ
 	local state = self.stack:peek()
-	
 	-- there are some "fake" events being fired on menu opening, so
 	-- we make a distinction here
 	if not state.opening then	
@@ -163,6 +169,11 @@ end
 
 function LibMJ:RegisterMenu(name, onMenuInit, onMenuClosed, onReturnArgsReceived, titleProvider, rowProvider, menuTypeInfo, onUpdate, onRowChanged)
 	assert(name, "Menu must have a name")
+
+    if self.menus[name] then
+      error("Menu with name " .. name .. " is already registered!")
+    end
+
 	self.menus[name] = {
 		name = name,
 		onMenuInit = onMenuInit or function () end,
@@ -254,7 +265,7 @@ function LibMJ:OpenMenu(name, state, ...)
 		menu.onMenuInit(state, unpack(state.args))
 	end
 
-	Helper.currentTableRow = 0
+	Helper.currentTableRow = {}
 	Helper.currentTableRowData = nil
 		
 	local isMap = menu.menuTypeInfo.type == "map"
@@ -481,8 +492,8 @@ function LibMJ:CreateButtonBar(state, menu, cellScripts)
 	buttonBarSetup:addSimpleRow(row1buttons, nil, nil, false, LibMJ.colors.transparent)
 	buttonBarSetup:addSimpleRow(row2buttons, nil, nil, false, LibMJ.colors.transparent)
 	
-	local colWidths = { 38, 170, 38, 170, 0, 170, 38, 170, 38 }
-	local isColumnWidthsInPercent = false
+	local colWidths = { 4, 20, 4, 20, 0, 20, 4, 20, 4 }
+	local isColumnWidthsInPercent = true
 	local doNotScale = false
 	local isBorderEnabled = true
 	local tabOrder = 2
@@ -721,6 +732,9 @@ function LibMJ:CreateDefaultCenterButton(label, selectable, color, fontSize, isB
 end
 
 function LibMJ:CreateDefaultButtonBarButton(label, selectable, hotkey, color, fontSize, width, offsetY)
+    if width and width < 0 then
+      error("button with label " .. label .. " has invalid width " .. width)
+    end
 	color = color or self.colors.white
 	local text = Helper.createButtonText(label, "center", Helper.standardFont, fontSize or 11, color.r, color.g, color.b, color.a)
 	return Helper.createButton(text, nil, false, selectable, 0, offsetY or 0, width or 170, 25, nil, hotkey)
@@ -1097,7 +1111,7 @@ end
 
 function LibMJ:CheckButtonBarAvailability(rowIdx, rowData)
 	local state = self.stack:peek()
-	
+
 	if state.buttons then
 		for _, button in ipairs(state.buttons) do
 			if button and button.label then

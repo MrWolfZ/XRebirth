@@ -154,3 +154,8 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+/LibMJ/Extension/ui/addons/ego_mainmenu/LibMJ.xpl
+/StationScanner/Extension/ui/addons/ego_mainmenu/StationScanner.xpl
+/StationScanner/Extension/StationScanner.xpl
+/UFO/Extension/ui/addons/ego_mainmenu/ufo_menu_sidebar.xpl
+/UFOTest/Extension/ui/addons/ego_mainmenu/ufo_test_menu_sidebar.xpl

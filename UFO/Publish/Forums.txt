@@ -62,6 +62,10 @@ If you are upgrading from a previous version, delete the old UFO folder first, a
 
 Simply subscribe to the mod.
 
+[b][color=cyan]=== Dependencies ===[/color][/b]
+
+You will need to download [url=http://forum.egosoft.com/viewtopic.php?t=365982]LibMJ[/url] to use UFO.
+
 [b][color=cyan]=== Compatibility ===[/color][/b]
 
 This mod is incompatible with any other mod that changes the pilot/captain/defence officer scripts. That being said, the UFO scripts only become active once a ship is assigned to a fleet. Therefore, as long as a ship is not in a fleet, all other mods should work correctly with that ship.

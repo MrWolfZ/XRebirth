@@ -10,7 +10,7 @@
   
 	X Rebirth version: 1.31
 -->
-<mdscript name="UFO_Reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/md.xsd">
+<mdscript name="UFO_Reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/md/md.xsd">
   <cues>
     <!--
       Cue to show a realtime status report from the commander of a fleet.

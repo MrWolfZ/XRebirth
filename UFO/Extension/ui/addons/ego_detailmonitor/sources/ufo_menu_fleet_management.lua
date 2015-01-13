@@ -608,10 +608,11 @@ Functions.getUnassignedShips = function (state)
 	
 	-- we can do a quick heuristic check to see if there are ships at all
 	if #PlayerShips > #ShipsToFleetId then
-		-- only allow ships to be selected that are not already in a fleet
+		-- only allow ships to be selected that are not already in a fleet and have at least a pilot
 		for _, ship in ipairs(PlayerShips) do
 			local isDrone = IsComponentClass(ship, "ship_xs")
-			if not ShipsToFleetId[tostring(ship)] and not isDrone then
+            local pilot = GetComponentData(ship, "pilot")
+			if not ShipsToFleetId[tostring(ship)] and not isDrone and pilot then
 				table.insert(ships, ship)
 			end
 		end

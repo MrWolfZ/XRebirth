@@ -50,7 +50,7 @@
   cue actors (which LibMJ is doing). Then, you can use such a dictionary as if
   it had a blackboard (e.g. $Dict.$oValue).
 -->
-<mdscript name="UFO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/md.xsd">
+<mdscript name="UFO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/md/md.xsd">
   <cues>
     <!-- 
       The cue to initialize UFO 
@@ -80,13 +80,13 @@
           <create_cue_actor name="$Config" cue="md.LibMJ.DictionaryContainer" />
           <set_value name="global.$UFO" exact="$Config" />
 					
-					<!-- We also check old version numbers for backwards compatiblity -->
-					<do_if value="global.$iUFO_MajorVersion?">
-						<set_value name="$Config.$iMajorVersion" exact="global.$iUFO_MajorVersion" />
-						<set_value name="$Config.$iMinorVersion" exact="global.$iUFO_MinorVersion" />
-						<set_value name="$Config.$iBugfixVersion" exact="global.$iUFO_BugfixVersion" />
-						<set_value name="$Config.$sVersion" exact="global.$sUFO_Version" />
-					</do_if>
+		  <!-- We also check old version numbers for backwards compatiblity -->
+		  <do_if value="global.$iUFO_MajorVersion?">
+			  <set_value name="$Config.$iMajorVersion" exact="global.$iUFO_MajorVersion" />
+			  <set_value name="$Config.$iMinorVersion" exact="global.$iUFO_MinorVersion" />
+			  <set_value name="$Config.$iBugfixVersion" exact="global.$iUFO_BugfixVersion" />
+			  <set_value name="$Config.$sVersion" exact="global.$sUFO_Version" />
+		  </do_if>
         </do_if>
         <do_else>
           <set_value name="$Config" exact="global.$UFO" />
@@ -95,7 +95,7 @@
         <set_value name="$iOldDebugLevel" exact="@$Config.$iDebugLevel" />
 
         <!-- UFO debug level -->
-        <set_value name="$Config.$iDebugLevel" exact="0" />
+        <set_value name="$Config.$iDebugLevel" exact="2" />
 
         <do_if value="$iOldDebugLevel != $Config.$iDebugLevel">
           <signal_objects object="player.primaryship" param="'UFO_UpdateDebugLevel'" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Packaging.Cat;
@@ -25,6 +26,8 @@ namespace Packaging.Mods
 
         public static void PackageMod(string modName, DirectoryInfo extensionDir)
         {
+            Console.WriteLine("Packaging mod {0}...", modName);
+
             var packager = new CatPackager(Steam.Steam.GetXRebirthCatTool().FullName);
             var lua = new LuaCompiler(LuaCompilerPath);
             var modDir = Steam.Steam.GetXRebirthModDirectory(modName);
@@ -55,8 +58,15 @@ namespace Packaging.Mods
 
             Console.WriteLine("Compiling UI...");
 
+            // TODO: make generic to scan mutliple locations for lua files to compile
             // compile the UI
-            lua.Compile(string.Format(@"{0}\ui\addons\detailmonitor\sources", extensionDir.FullName));
+            var uiFiles = extensionDir.EnumerateFiles("*.lua", SearchOption.AllDirectories);
+            var uiDirectories = uiFiles.Select(f => f.Directory).Distinct(new DirectoryByNameComparer());
+            foreach (var uiDir in uiDirectories)
+            {
+                var outputDir = string.Compare(uiDir.Name, "sources", true) == 0 ? null : uiDir.FullName;
+                lua.Compile(uiDir.FullName, outputDir);
+            }
 
             Console.WriteLine("Packaging UI...");
 
@@ -66,9 +76,22 @@ namespace Packaging.Mods
             Console.WriteLine("Packaging Scripts...");
 
             // package the scripts
-            packager.Package(extensionDir.FullName, modDir.FullName, "ext_01.cat", @"^.*\.xml$", "^.*content.xml$");
+            packager.Package(extensionDir.FullName, modDir.FullName, "ext_01.cat", @"^.*(\.xml|\.txt)$", "^.*content.xml$");
 
             Console.WriteLine("Finished packaging mod!");
+        }
+
+        private class DirectoryByNameComparer : IEqualityComparer<DirectoryInfo>
+        {
+            public bool Equals(DirectoryInfo x, DirectoryInfo y)
+            {
+                return x.FullName.Equals(y.FullName);
+            }
+
+            public int GetHashCode(DirectoryInfo obj)
+            {
+                return obj.FullName.GetHashCode();
+            }
         }
     }
 }

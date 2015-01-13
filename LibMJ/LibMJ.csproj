@@ -47,11 +47,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Extension\ui\addons\detailmonitor\sources\LibMJ.lua" />
-    <None Include="Extension\ui\addons\detailmonitor\sources\LibMJ_menu_input_text.lua" />
-    <None Include="Extension\ui\addons\detailmonitor\sources\LibMJ_menu_select_ship.lua" />
-    <None Include="Extension\ui\addons\detailmonitor\sources\LibMJ_menu_select_zone.lua" />
-    <None Include="Extension\ui\addons\detailmonitor\sources\LibMJ_stack.lua" />
+    <None Include="Extension\ui\addons\ego_detailmonitor\sources\LibMJ.lua" />
+    <None Include="Extension\ui\addons\ego_detailmonitor\sources\LibMJ_menu_input_text.lua" />
+    <None Include="Extension\ui\addons\ego_detailmonitor\sources\LibMJ_menu_select_ship.lua" />
+    <None Include="Extension\ui\addons\ego_detailmonitor\sources\LibMJ_menu_select_zone.lua" />
+    <None Include="Extension\ui\addons\ego_detailmonitor\sources\LibMJ_stack.lua" />
+    <None Include="Extension\ui\addons\ego_mainmenu\sources\LibMJ.lua" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Extension\aiscripts\mj.lib.log.xml" />
@@ -66,7 +67,8 @@
     <Content Include="Extension\t\0001-L049.xml" />
     <Content Include="Extension\t\0001-L086.xml" />
     <Content Include="Extension\t\0001-L088.xml" />
-    <Content Include="Extension\ui\addons\detailmonitor\detailmonitor.xml" />
+    <Content Include="Extension\ui\addons\ego_detailmonitor\ego_detailmonitor.xml" />
+    <Content Include="Extension\ui\addons\ego_mainmenu\ego_mainmenu.xml" />
     <Content Include="Publish\Forums.txt" />
     <Content Include="Publish\Images\logo-base.png" />
     <Content Include="Publish\Images\logo-square.png" />

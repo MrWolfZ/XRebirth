@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <content id="ws_255150121" name="MadJoker's Library Scripts" description="A collection of library scripts." author="MadJoker" version="001" date="2014-05-01" save="false" sync="false" lastupdate="1398948168">
-	<!-- Requires minimum game version 1.30 -->
-	<dependency version="130"/>
+	<!-- Requires minimum game version 3.10 -->
+	<dependency version="310"/>
 </content>

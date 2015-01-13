@@ -17,7 +17,7 @@
   
   Check for enemies and engages if necessary.
 -->
-<aiscript name="ufo.capital.defence.main" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+<aiscript name="ufo.capital.defence.main" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/aiscripts/aiscripts.xsd">
   <params>
     <!-- Should we attack stations in range? -->
     <param name="bEngageStations" default="true" />

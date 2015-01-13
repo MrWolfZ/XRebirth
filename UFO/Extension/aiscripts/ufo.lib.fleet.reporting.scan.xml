@@ -15,7 +15,7 @@
   This script checks the environment of a given ship for enemies.
   Returns the enemy group.
 -->
-<aiscript name="ufo.lib.fleet.reporting.scan" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+<aiscript name="ufo.lib.fleet.reporting.scan" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/aiscripts/aiscripts.xsd">
   <params>
     <!-- At what additional distance are we engaging capital ships? -->
     <param name="mCapShipOffset" default="3.5km" />

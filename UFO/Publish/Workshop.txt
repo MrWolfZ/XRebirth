@@ -46,6 +46,10 @@ This mod also features using crew skills. For example, highly skilled captains c
 
 Please be aware that this is a beta release and as such might melt your PC, destroy the world, or who knows. So please use it with caution.
 
+[b]Dependencies[/b]
+
+You will need to subscribe to [url=http://steamcommunity.com/sharedfiles/filedetails/?id=255150121]LibMJ[/url] to use UFO.
+
 [b]Compatibility[/b]
 
 This mod is incompatible with any other mod that changes the pilot/captain/defence officer scripts. That being said, the UFO scripts only become active once a ship is assigned to a fleet. Therefore, as long as a ship is not in a fleet, all other mods should work correctly with that ship.

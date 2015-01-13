@@ -17,7 +17,7 @@
   
   Makes the commander fly to a zone and attack all targets.
 -->
-<aiscript name="ufo.move.capital.attack.zone" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+<aiscript name="ufo.move.capital.attack.zone" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/aiscripts/aiscripts.xsd">
   <params>
     <!-- The zone to attack -->
     <param name="oAttackDestination" />

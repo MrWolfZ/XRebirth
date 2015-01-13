@@ -34,10 +34,7 @@ namespace Packaging
             foreach (var mod in modNames.Split(','))
             {
                 var modDir = new DirectoryInfo(string.Format(@"{0}\{1}", baseDir.FullName, mod));
-                if (modDir.GetDirectories().Any(di => di.Name == "Extension"))
-                {
-                    modDir = modDir.GetDirectories().Single(di => di.Name == "Extension");
-                }
+                modDir = modDir = modDir.GetDirectories().SingleOrDefault(di => string.Compare(di.Name, "Extension", true) == 0) ?? modDir;
 
                 ModPackager.PackageMod(mod, modDir);
             }

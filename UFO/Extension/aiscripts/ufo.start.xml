@@ -14,7 +14,7 @@
 <!--
   This script is the main entry point for all entities running UFO scripts.
 -->
-<aiscript name="ufo.start" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+<aiscript name="ufo.start" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/aiscripts/aiscripts.xsd">
   <interrupts>
     <!-- Global interrupt handler to indicate fleets being attacked -->
     <handler>

@@ -14,7 +14,7 @@
 <!--
   This script is a workaround for the issue that shoot_at is not allowed for non-visible attention.
 -->
-<aiscript name="ufo.capital.defence.fire" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Resources/aiscripts.xsd">
+<aiscript name="ufo.capital.defence.fire" version="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/aiscripts/aiscripts.xsd">
   <params>
     <param name="oPriorityTarget" />
     <param name="gAdditionalTargets" />

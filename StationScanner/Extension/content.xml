@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<content id="" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker" version="001" date="2015-01-12" save="false" sync="false" lastupdate="">
+  <!-- Requires minimum game version 3.10 -->
+  <dependency version="310"/>
+  <text language="7" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker"/>
+  <text language="33" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker"/>
+  <text language="34" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker"/>
+  <text language="39" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker"/>
+  <text language="44" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker"/>
+  <text language="49" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker"/>
+  <text language="86" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker"/>
+  <text language="88" name="Station Scanner" description="Software to automatically scan all info points, trade offers etc. on a given station" author="MadJoker"/>
+</content>

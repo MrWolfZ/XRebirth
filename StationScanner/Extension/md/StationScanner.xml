@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<mdscript name="StationScanner" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/md/md.xsd">
+
+  <cues>
+
+    <cue name="OnInfoMenu" instantiate="true" namespace="this">
+      <conditions>
+        <check_any>
+          <event_conversation_next_section sectionprefix="gStationScanner" />
+          <event_conversation_returned_to_section sectionprefix="gStationScanner" />
+        </check_any>
+      </conditions>
+      <actions>
+        <find_station name="$oStation" space="player.zone" />
+        <find_infopoint_location name="$lInfos" multiple="true" container="$oStation" />
+        <do_all exact="$lInfos.count" counter="$i">
+          <set_value name="$oInfo" exact="$lInfos.{$i}.component" />
+          <set_known object="$oInfo" known="true" />
+          <debug_text text="'Set info point %1 to be known!'.[$oInfo]" />
+        </do_all>
+      </actions>
+    </cue>
+    
+  </cues>
+</mdscript>
