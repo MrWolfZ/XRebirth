@@ -1,8 +1,8 @@
 ﻿[b]Author:[/b] MadJoker
-[b]Version:[/b] V0.0.1
-[b]Date:[/b] 1st May 2014
+[b]Version:[/b] V0.1.0
+[b]Date:[/b] 17th January 2015
 
-[b]X:Rebirth Version:[/b] 1.31
+[b]X:Rebirth Version:[/b] 3.10
 
 [b][color=cyan]=== About ===[/color][/b]
 
@@ -14,7 +14,9 @@ This library contains:
 [list]
 [*] A generic installation and version control MD script. See the LibMJ.xml file for an example of how the generic script is used by the LibMJ initialization script itself.
 
-[*] A generic radial menu generator. Usage details will be provided at a later point.
+[*] A generic radial menu generator.
+
+[*] A mechanism to add menu items to the sidebar (compatible with SidebarExtender).
 
 [*] A way to create dictionaries/associative arrays to be used in scripts:
 
@@ -75,6 +77,9 @@ For texts I am using page 99997.
 [list]
 [*] [b][2014-05-01 - V0.0.1][/b]
 Initial Release 
+[*] [b][2015-01-17 - V0.1.0][/b]
+Compatibility with X:Rebirth 3.10
+New mechanism for adding items to the sidebar 
 [/list]
 [b][color=cyan]=== Future Plans ===[/color][/b]
 [list]

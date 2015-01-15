@@ -1,8 +1,8 @@
 Author: MadJoker 
-Version: V0.5.0 Beta
-Date: 1st May 2014
+Version: V0.6.0 Beta
+Date: 17th January 2015
 
-X Rebirth version: 1.31
+X Rebirth version: 3.10
 
 http://steamcommunity.com/sharedfiles/filedetails/?id=247004923
 http://xrebirth.nexusmods.com/mods/278/
@@ -20,7 +20,7 @@ This mod is a complete rewrite from scratch for the escort and capital ship comb
 
 === Details ===
 
-This mod adds a fleet management UI to the game, accessible via the Radial Menu -> 3-Universe -> 4 Fleet Management.
+This mod adds a fleet management UI to the game, accessible via the Sidebar (in the INFO section).
 
 The most basic functionality of this mod is to just assign some ships to the 'Player Fleet' and they will follow you 
 and engage enemies based on the selected stances (see below). The ships will then not be part of your squad in terms 

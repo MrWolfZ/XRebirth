@@ -4,10 +4,10 @@
 	Author: MadJoker
   
 	Last Change:
-	Version: V0.0.1
-	Date: 1st May 2014
+	Version: V0.1.0
+	Date: 17th January 2015
   
-	X Rebirth version: 1.31
+	X Rebirth version: 3.10
 --]]
 
 -- catch the case where menus tried to register before LibMJ was initialized
@@ -92,6 +92,11 @@ LibMJ.onShowMenu = function ()
 	table.remove(args, 2)
 	table.remove(args, 1)
 	
+    if startMenu == "LibMJ_Return" then
+      Helper.closeMenuAndReturn(self, false, {})
+      return
+    end
+
 	self.stack = self.stack or Stack:Create()
 	
 	-- we put an empty container on the stack to catch return parameters

@@ -13,7 +13,7 @@ local function init()
             "Fleet Management", 
             "Manage your fleets", 
             "gUFO_MenuFleetManagement",
-            nil, -- icon
+            "mm_ic_info_shipstatus",
             nil, -- sectionParam
             checkFleetManagementSelectable)
 	else

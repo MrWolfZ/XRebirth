@@ -4,10 +4,10 @@
 	Author: MadJoker
   
 	Last Change:
-	Version: V0.0.1
-	Date: 1st May 2014
+	Version: V0.1.0
+	Date: 17th January 2015
   
-	X Rebirth version: 1.31
+	X Rebirth version: 3.10
 --]]
 
 -- catch the case where menus tried to register before LibMJ was initialized
@@ -18,26 +18,26 @@ end
 
 LibMJ = {
     mainMenuRef = nil,
+	sidebarCategories = {},
+    sidebarCategoryCount = 0,
 	sidebarMenus = {},
     sidebarMenuCount = 0
 }
 
 LibMJ.sidebarLocationsAndCategories = {
   top = {
-    modes = 1, 
-    info = 2, 
-    missions = 3, 
-    navigation = 4,
-    communication = 5,
-    trading = 6,
-    crew = 7,
-    drones = 8,
-    new = nil
+    "modes", 
+    "info", 
+    "missions", 
+    "navigation",
+    "communication",
+    "trading",
+    "crew",
+    "drones"
   },
   bottom = {
-    options = 1,
-    close = 2,
-    new = nil
+    "options",
+    "close"
   }
 }
 
@@ -61,9 +61,28 @@ end
 
 LibMJ.mainMenuCreateSetup = function()
   local self = LibMJ
-  self.origMainMenuCreateSetup()      
+  self.origMainMenuCreateSetup() 
+
+  -- enrich the existing setup
+  for location, categories in pairs(self.sidebarLocationsAndCategories) do
+    local predefinedCategories = self.mainMenuRef.setup[location]
+    for i, key in ipairs(categories) do
+      predefinedCategories[i].key = key
+    end
+  end
   
-  -- first, we build an array from the menus based on their index
+  -- build an array from the categories based on their index
+  -- to ensure correct category order
+  local categories = {}
+  for _, cat in pairs(self.sidebarCategories) do
+    categories[cat.index] = cat
+  end
+
+  for _, cat in ipairs(categories) do
+    self:AddCategoryToSidebar(cat)
+  end
+  
+  -- build an array from the menus based on their index
   -- to ensure correct menu order
   local menus = {}
   for _, menu in pairs(self.sidebarMenus) do
@@ -75,15 +94,51 @@ LibMJ.mainMenuCreateSetup = function()
   end
 end
 
-function LibMJ:RegisterSidebarMenu(location, category, name, description, section, icon, sectionparam, condition, list)
+function LibMJ:RegisterSidebarCategory(location, name, icon)
+	assert(location, "Sidebar category must have a location (i.e. top or bottom)")
+	assert(name, "Sidebar category must have a name")
+	assert(icon, "Sidebar category must have an icon")
+
+    error("Adding new categories to the sidebar is currently not supported!")
+
+    local catKey = location .. "_" .. name
+    
+    if self.sidebarCategories[catKey] then
+      error("Sidebar category with key " .. catKey .. " is already registered!")
+    end
+
+    self.sidebarCategoryCount = self.sidebarCategoryCount + 1
+	self.sidebarCategories[catKey] = {
+        index = self.sidebarCategoryCount,
+        location = location,
+		name = name,
+        icon = icon
+	}
+end
+
+function LibMJ:RegisterSidebarMenu(location, category, name, description, section, icon, sectionparam, condition)
 	assert(location, "Sidebar menu must have a location (i.e. top or bottom)")
 	assert(category, "Sidebar menu must have a category")
 	assert(name, "Sidebar menu must have a name")
 
-    local menuKey = location .. "_" .. category .. "_" .. name
+    local catPath = category
+    local catCount = 1
+    if type(category) == "table" then
+      catPath = ""
+      catCount = #category
+      for _, cat in ipairs(category) do
+        catPath = catPath .. "," .. cat
+      end
+    end
+
+    local menuKey = location .. "_" .. catPath .. "_" .. name
     
     if self.sidebarMenus[menuKey] then
       error("Sidebar menu with key " .. menuKey .. " is already registered!")
+    end
+
+    if catCount > 1 and not icon then
+      error("Sub menus must have an icon!")
     end
 
     self.sidebarMenuCount = self.sidebarMenuCount + 1
@@ -96,55 +151,80 @@ function LibMJ:RegisterSidebarMenu(location, category, name, description, sectio
         section = section or "",
         icon = icon,
         sectionparam = sectionparam or {},
-        condition = condition or true,
-        list = list
+        condition = condition or true
 	}
+end
+
+function LibMJ:AddCategoryToSidebar(cat)
+    local catObj = {
+        key = cat.name,
+		name = cat.name,
+        icon = cat.icon
+    }
+
+    local reqCategories = { [0] = menu.category }
+    if type(menu.category) == "table" then
+      reqCategories = menu.category
+    end
+
+    local categories = self.mainMenuRef.setup[cat.location]
+    for _, cat in pairs(categories) do
+      if cat.name == reqCategory then
+        error("Category with name " .. cat.name .. " already exists!")
+      end
+    end
+    
+    -- we have to adjust the height of the menu to compensate for the additional item
+    -- 59 is the value that is added to the base height of the sidebar per item in Ego's code
+    self.mainMenuRef.height = self.mainMenuRef.height + 59
+    table.insert(categories, menuObj)
 end
 
 function LibMJ:AddMenuToSidebar(menu)
     local menuObj = {
+        key = menu.name,
 		name = menu.name,
         info = menu.description,
         section = menu.section,
         icon = menu.icon,
         sectionparam = menu.sectionparam,
-        condition = menu.condition,
-        list = menu.list
+        condition = menu.condition
     }
 
     if type(menuObj.condition) == "function" then
       menuObj.condition = menuObj.condition()
     end
 
-    if type(menuObj.list) == "function" then
-      menuObj.list = menuObj.list()
+    local reqCategories = { menu.category }
+    if type(menu.category) == "table" then
+      reqCategories = menu.category
     end
 
-    local categories = self.mainMenuRef.setup[menu.location]
-    local index = self.sidebarLocationsAndCategories[menu.location][menu.category]
     local category = nil
+    local categories = self.mainMenuRef.setup[menu.location]
 
-    -- if category is not pre-defined, we search over existing categories to see if it has already been added
-    if not index then
-      for _, cat in pairs(categories) do
-        if cat.name == menu.category then
+    local catPath = ""
+    for _, reqCategory in ipairs(reqCategories) do
+      catPath = catPath .. " -> " .. reqCategory
+      category = nil
+      for _, cat in ipairs(categories) do
+        if cat.key == reqCategory then
           category = cat
+          categories = cat.list or {}
         end
       end
-    else
-      category = categories[index]
+
+      if not category then
+        categories = {}
+      end
     end
 
     if not category then
-        error("Adding new categories to the sidebar is currently not supported!")
-        -- we have to adjust the height of the menu to compensate for the additional item
-        -- 59 is the value that is added to the base height of the sidebar per item in Ego's code
-        self.mainMenuRef.height = self.mainMenuRef.height + 59
-        table.insert(categories, menuObj)
-    else
-        category.list = category.list or {}
-        table.insert(category.list, menuObj)
+      error("Menu path " .. catPath .. " does not exist!")
     end
+
+    category.list = category.list or {}
+    table.insert(category.list, menuObj)
 end
 
 init()

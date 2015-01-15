@@ -5,10 +5,10 @@
 	Author: MadJoker
   
 	Last Change:
-	Version: V0.5.0 Beta
-	Date: 1st May 2014
+	Version: V0.6.0 Beta
+	Date: 17th January 2015
   
-	X Rebirth version: 1.31
+	X Rebirth version: 3.10
 -->
 
 <!--	
@@ -69,7 +69,7 @@
 
         <!-- LibMJ version number -->
         <set_value name="$iMajorVersion" exact="0" />
-        <set_value name="$iMinorVersion" exact="5" />
+        <set_value name="$iMinorVersion" exact="6" />
         <set_value name="$iBugfixVersion" exact="0" />
 
         <set_value name="$sInstallMessage" exact="{99998,9999}" />
@@ -95,7 +95,7 @@
         <set_value name="$iOldDebugLevel" exact="@$Config.$iDebugLevel" />
 
         <!-- UFO debug level -->
-        <set_value name="$Config.$iDebugLevel" exact="2" />
+        <set_value name="$Config.$iDebugLevel" exact="0" />
 
         <do_if value="$iOldDebugLevel != $Config.$iDebugLevel">
           <signal_objects object="player.primaryship" param="'UFO_UpdateDebugLevel'" />

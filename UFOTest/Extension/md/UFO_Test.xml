@@ -1,62 +1,5 @@
-<mdscript name="UFO_Test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../modding/md.xsd">
+<mdscript name="UFO_Test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="F:/X Rebirth Modding/Original Assets/md/md.xsd">
   <cues>
-    <cue name="UFO_Test_Reset" instantiate="false" namespace="this">
-      <conditions>
-        <check_any>
-          <!-- Will fire once on every game load, but not on new game -->
-          <event_player_created />
-          <!-- Will fire as long as game is less than 20 seconds old -->
-          <event_cue_signalled cue="md.Setup.GameStart" />
-        </check_any>
-      </conditions>
-      <actions>
-        <reset_cue cue="UFO_Test_Spawn" />
-        <reset_cue cue="UFO_Test_SpawnCapital" />
-        <reset_cue cue="UFO_Test_SpawnEnemy" />
-        <reset_cue cue="UFO_Test_SpawnEnemyCapital" />
-      </actions>
-    </cue>
-
-    <!-- 
-      The cue to initialize UFO_Test 
-    -->
-    <cue name="UFO_Test_Start" instantiate="true" namespace="this">
-      <conditions>
-        <check_any>
-          <event_conversation_next_section sectionprefix="gMainUniverse_" />
-          <event_conversation_returned_to_section sectionprefix="gMainUniverse_" />
-        </check_any>
-      </conditions>
-      <actions>
-        <add_player_choice text="'UFO-Test - Spawn Ships'" position="right" section="gUFO_Test" />
-      </actions>
-    </cue>
-
-    <cue name="UFO_Test_Main" instantiate="true" namespace="this">
-      <conditions>
-        <check_any>
-          <event_conversation_next_section sectionprefix="gUFO_Test" />
-          <event_conversation_returned_to_section sectionprefix="gUFO_Test" />
-        </check_any>
-      </conditions>
-      <actions>
-        <add_player_choice text="'10 fighters for player'" position="top_left" section="gUFO_Test_SpawnPlayerFighter" />
-        <add_player_choice text="'2 capitals for player'" position="left" section="gUFO_Test_SpawnPlayerCapital" />
-        <add_player_choice text="'10 fighters for enemy'" position="top_right" section="gUFO_Test_SpawnEnemy" />
-        <add_player_choice text="'2 capitals for enemy'" position="right" section="gUFO_Test_SpawnEnemyCapital" />
-        <add_player_choice text="'1 station for enemy'" position="bottom_left" section="gUFO_Test_SpawnEnemyStation" />
-
-        <!--
-        <find_ship groupname="$gShips" multiple="true" owner="faction.player" space="player.galaxy" />
-        <remove_from_group group="$gShips" object="player.primaryship" />
-        <set_value name="$lParam" exact="[$gShips,0,Lib_UFO_AddResetShipOption,[]]" />
-        <add_player_choice_sub text="'Reset ship'" section="gUFO_GenericListIteration" choiceparam="$lParam" selectable="$gShips.count gt 0" />
-        -->
-
-        <add_player_choice_return text="'(%1)'.[{1001,2669}]" position="bottom_right" />
-      </actions>
-    </cue>
-
     <library name="Lib_UFO_AddResetShipOption">
       <actions>
         <add_player_choice_sub text="$aParam.{2}" section="gUFO_Test_ResetShip" baseparam="$aParam.{4}" choiceparam="[$aParam.{1}]" />
@@ -109,35 +52,75 @@
         <debug_text text="'reset ship %1 - %2 - %3'.[$oShip,$oShip.class,$oShip.knownname]" filter="error" />
       </actions>
     </cue>
-
-    <cue name="UFO_Test_Spawn">
+    
+    <cue name="UFO_Test_Spawn_Player" instantiate="true">
       <conditions>
-        <check_any>
-          <event_conversation_next_section section="gUFO_Test_SpawnPlayerFighter" />
-          <event_conversation_returned_to_section section="gUFO_Test_SpawnPlayerFighter" />
-        </check_any>
+        <event_conversation_next_section section="gUFO_Test_Spawn_Player" />
+      </conditions>
+      <actions>
+        <set_value name="$sClass" exact="event.param2.{1}" />
+        <set_value name="$iCount" exact="event.param2.{2}" />
+        <set_value name="$oClass" exact="class.ship_xl" />
+        <do_if value="$sClass == 'S' or $sClass == 's'">
+          <set_value name="$oClass" exact="class.ship_s" />
+        </do_if>
+        <set_value name="$pOffset" exact="position.[0,0,0]" />
+        <signal_cue_instantly cue="UFO_Test_Spawn_Generic" param="[faction.player,$oClass,$iCount,$pOffset,UFO_Test_Scripts_Player]"/>
+      </actions>
+    </cue>
+    
+    <cue name="UFO_Test_Spawn_Enemy" instantiate="true">
+      <conditions>
+        <event_conversation_next_section section="gUFO_Test_Spawn_Enemy" />
+      </conditions>
+      <actions>
+        <set_value name="$sClass" exact="event.param2.{1}" />
+        <set_value name="$iCount" exact="event.param2.{2}" />
+        <set_value name="$oClass" exact="class.ship_xl" />
+        <do_if value="$sClass == 'S' or $sClass == 's'">
+          <set_value name="$oClass" exact="class.ship_s" />
+        </do_if>
+        <set_value name="$pOffset" exact="position.[0,0,10km]" />
+        <signal_cue_instantly cue="UFO_Test_Spawn_Generic" param="[faction.xenon,$oClass,$iCount,$pOffset,UFO_Test_Scripts_Enemy]"/>
+      </actions>
+    </cue>
+
+    <cue name="UFO_Test_Spawn_Generic" instantiate="true">
+      <conditions>
+        <event_cue_signalled />
+        <set_value name="$oFaction" exact="event.param.{1}" />
+        <set_value name="$oClass" exact="event.param.{2}" />
+        <set_value name="$iAmount" exact="event.param.{3}" />
+        <set_value name="$pOffset" exact="event.param.{4}" />
+        <set_value name="$oEndCue" exact="event.param.{5}" />
       </conditions>
       <cues>
-        <cue name="UFO_Test_SpawnPlayerShips" ref="md.LIB_Create_Ships.Start">
-          <param name="EndSignalCue" value="UFO_Test_CreateFormations"/>
-          <param name="GroupCue" value="UFO_Test_Spawn" />
+        <cue name="UFO_Test_Spawn_Return">
+          <actions>
+            <debug_text text="'%1,%2,%3,%4,%5'.[$oFaction,$oClass,$iAmount,$pOffset,$oEndCue]" chance="0" />
+            <open_conversation_menu menu="LibMJ" param="['LibMJ_Return',null]" />
+          </actions>
+        </cue>
+        <cue name="UFO_Test_Spawn_Internal" ref="md.LIB_Create_Ships.Start">
+          <param name="EndSignalCue" value="$oEndCue"/>
+          <param name="GroupCue" value="$oEndCue" />
           <param name="ClearGroup" value="true" />
 
           <!--Ship Info-->
-          <param name="Ship_Amount" value="10" />
-          <param name="Ship_Faction" value="faction.player" />
+          <param name="Ship_Amount" value="$iAmount" />
+          <param name="Ship_Faction" value="$oFaction" />
 
           <param name="Ship_Ref" value="null" />
           <param name="Ship_Macro" value="null" />
 
           <param name="Ship_CategoryFaction" value="null" />
-          <param name="Ship_Category_Size" value="class.ship_s" />
+          <param name="Ship_Category_Size" value="$oClass" />
           <param name="Ship_CategoryTags" value="null" />
 
           <!--Location Info-->
           <param name="Zone" value="player.zone"/>
           <param name="PositionObject" value="player.primaryship" />
-          <param name="Position" value="position.[0,0,0]"/>
+          <param name="Position" value="$pOffset"/>
           <param name="SafePos" value="true"/>
           <param name="MinRange" value="500m"/>
           <param name="MaxRange" value="1km"/>
@@ -152,61 +135,65 @@
           <param name="DefenceNPC_DoCreate" value="true" />
           <param name="Engineer_DoCreate" value="true" />
 
-          <param name="DebugChance" value="100"/>
+          <param name="DebugChance" value="0"/>
         </cue>
-        <cue name="UFO_Test_CreateFormations">
-          <conditions>
-            <event_cue_signalled />
-          </conditions>
-          <delay exact="1s" />
-          <actions>
-            <set_value name="$ships" exact="@$LIB_Create_Ships_Result" />
-            <do_if value="not @$ships.count">
-              <set_value name="$ships" exact="[]" />
-            </do_if>
-            <debug_text text="'Spawned %1 ships for player.'.[$ships.count]" filter="error" />
-            <set_value name="$iDebugLevel" exact="0" />
-            <do_if value="global.$UFO.$iDebugLevel?">
-              <set_value name="$iDebugLevel" exact="global.$UFO.$iDebugLevel" />
-            </do_if>
+      </cues>
+    </cue>
 
-            <set_value name="$oLeader" exact="player.primaryship" />
-            <do_all exact="$ships.count" counter="$i">
-              <set_value name="$oShip" exact="$ships.{$i}" />
+    <cue name="UFO_Test_Scripts_Player" instantiate="true">
+      <conditions>
+        <event_cue_signalled />
+      </conditions>
+      <actions>
+        <set_value name="$ships" exact="@$LIB_Create_Ships_Result" />
+        <do_if value="not @$ships.count">
+          <set_value name="$ships" exact="[]" />
+        </do_if>
+        <debug_text text="'Spawned %1 ships for player.'.[$ships.count]" />
+        <set_value name="$iDebugLevel" exact="0" />
+        <do_if value="global.$UFO.$iDebugLevel?">
+          <set_value name="$iDebugLevel" exact="global.$UFO.$iDebugLevel" />
+        </do_if>
 
-              <set_object_radar_visible object="$oShip" visible="true" />
+        <set_value name="$oLeader" exact="player.primaryship" />
+        <do_all exact="$ships.count" counter="$i">
+          <set_value name="$oShip" exact="$ships.{$i}" />
 
-              <set_skill entity="$oShip.pilot" type="navigation" exact="$i" />
-              <set_skills_visible entity="$oShip.pilot" visible="true" />
+          <set_object_radar_visible object="$oShip" visible="true" />
 
-              <do_if value="[class.ship_l,class.ship_xl].indexof.{$oShip.class}">
-                <start_script name="'ufo.move.capital.follow.any'" object="$oShip.pilot">
-                  <param name="oTarget" value="player.primaryship" />
-                  <param name="sFollowMode" value="'aggressive'" />
-                  <param name="mEngageDist" value="5.5km" />
-                  <param name="mCapShipOffset" value="3.5km" />
-                  <param name="iDebugLevel" value="$iDebugLevel" />
-                </start_script>
-                <start_script name="'ufo.fight.capital.defend'" object="$oShip.defencenpc">
-                  <param name="sStance" value="'aggressive'" />
-                  <param name="mEngageDist" value="5.5km" />
-                  <param name="mCapShipOffset" value="3.5km" />
-                  <param name="iDebugLevel" value="$iDebugLevel" />
-                </start_script>
-              </do_if>
-              <do_else>
-                <start_script name="'ufo.move.fighter.follow.fighter'" object="$oShip.pilot">
-                  <param name="oTarget" value="$oLeader" />
-                  <param name="eFormation" value="formationshape.pointguard" />
-                  <param name="oFormationparam" value="$oLeader.size * 10" />
-                  <param name="bEscort" value="true" />
-                  <param name="sEscortMode" value="'aggressive'" />
-                  <param name="iDebugLevel" value="$iDebugLevel" />
-                </start_script>
-              </do_else>
-            </do_all>
+          <set_skill entity="$oShip.pilot" type="navigation" exact="$i" />
+          <set_skills_visible entity="$oShip.pilot" visible="true" />
 
-            <!--
+          <!--
+          <do_if value="[class.ship_l,class.ship_xl].indexof.{$oShip.class}">
+            <start_script name="'ufo.move.capital.follow.any'" object="$oShip.pilot">
+              <param name="oTarget" value="player.primaryship" />
+              <param name="sFollowMode" value="'aggressive'" />
+              <param name="mEngageDist" value="5.5km" />
+              <param name="mCapShipOffset" value="3.5km" />
+              <param name="iDebugLevel" value="$iDebugLevel" />
+            </start_script>
+            <start_script name="'ufo.fight.capital.defend'" object="$oShip.defencenpc">
+              <param name="sStance" value="'aggressive'" />
+              <param name="mEngageDist" value="5.5km" />
+              <param name="mCapShipOffset" value="3.5km" />
+              <param name="iDebugLevel" value="$iDebugLevel" />
+            </start_script>
+          </do_if>
+          <do_else>
+            <start_script name="'ufo.move.fighter.follow.fighter'" object="$oShip.pilot">
+              <param name="oTarget" value="$oLeader" />
+              <param name="eFormation" value="formationshape.pointguard" />
+              <param name="oFormationparam" value="$oLeader.size * 10" />
+              <param name="bEscort" value="true" />
+              <param name="sEscortMode" value="'aggressive'" />
+              <param name="iDebugLevel" value="$iDebugLevel" />
+            </start_script>
+          </do_else>
+          -->
+        </do_all>
+
+        <!--
             <start_script name="'ufo.move.fighter.follow.fighter'" object="$oLeader.pilot">
               <param name="oTarget" value="player.primaryship" />
               <param name="eFormation" value="formationshape.pointguard"/>
@@ -216,275 +203,34 @@
               <param name="iDebugLevel" value="3" />
             </start_script>
             -->
-            <reset_cue cue="UFO_Test_Spawn" />
-          </actions>
-        </cue>
-      </cues>
+      </actions>
     </cue>
 
-    <cue name="UFO_Test_SpawnCapital">
+    <cue name="UFO_Test_Scripts_Enemy" instantiate="true">
       <conditions>
-        <check_any>
-          <event_conversation_next_section section="gUFO_Test_SpawnPlayerCapital" />
-          <event_conversation_returned_to_section section="gUFO_Test_SpawnPlayerCapital" />
-        </check_any>
+        <event_cue_signalled />
       </conditions>
-      <cues>
-        <cue name="UFO_Test_SpawnPlayerCapitalShips" ref="md.LIB_Create_Ships.Start">
-          <param name="EndSignalCue" value="UFO_Test_CreateCapitalFormations"/>
-          <param name="GroupCue" value="UFO_Test_SpawnCapital" />
-          <param name="ClearGroup" value="true" />
+      <delay exact="5s" />
+      <actions>
+        <set_value name="$ships" exact="@$LIB_Create_Ships_Result" />
+        <do_if value="not @$ships.count">
+          <set_value name="$ships" exact="[]" />
+        </do_if>
+        <debug_text text="'Spawned %1 ships for enemy.'.[$ships.count]" />
 
-          <!--Ship Info-->
-          <param name="Ship_Amount" value="2" />
-          <param name="Ship_Faction" value="faction.player" />
+        <create_position name="$pos" object="player.primaryship" />
 
-          <param name="Ship_Ref" value="null" />
-          <param name="Ship_Macro" value="null" />
-
-          <param name="Ship_CategoryFaction" value="null" />
-          <param name="Ship_Category_Size" value="class.ship_xl" />
-          <param name="Ship_CategoryTags" value="null" />
-
-          <!--Location Info-->
-          <param name="Zone" value="player.zone"/>
-          <param name="PositionObject" value="player.primaryship" />
-          <param name="Position" value="position.[0,0,0]"/>
-          <param name="SafePos" value="true"/>
-          <param name="MinRange" value="500m"/>
-          <param name="MaxRange" value="1km"/>
-
-          <param name="Dock" value="null" />
-
-          <param name="FindBetterLocation" value="false" />
-
-          <!--NPC Info-->
-          <!--If Ship_Faction is set, all NPCs will have their owner set to that faction-->
-          <param name="Pilot_DoCreate" value="true" />
-          <param name="Pilot_Essential" value="true" />
-
-          <param name="DefenceNPC_DoCreate" value="true" />
-          <param name="Engineer_DoCreate" value="true" />
-
-          <param name="DebugChance" value="100"/>
-        </cue>
-        <cue name="UFO_Test_CreateCapitalFormations">
-          <conditions>
-            <event_cue_signalled />
-          </conditions>
-          <delay exact="1s" />
-          <actions>
-            <set_value name="$ships" exact="@$LIB_Create_Ships_Result" />
-            <do_if value="not @$ships.count">
-              <set_value name="$ships" exact="[]" />
-            </do_if>
-            <debug_text text="'Spawned %1 ships for player.'.[$ships.count]" filter="error" />
-
-            <set_value name="$oLeader" exact="$ships.{$ships.count}" />
-            <do_all exact="$ships.count" counter="$i">
-              <set_value name="$oShip" exact="$ships.{$i}" />
-
-              <set_skill entity="$oShip.pilot" type="navigation" exact="$i" />
-              <set_skills_visible entity="$oShip.pilot" visible="true" />
-              <set_skills_visible entity="$oShip.defencenpc" visible="true" />
-
-              <!-- <destroy_object object="$oShip.controlentity.{entitytype.defencecontrol}" /> -->
-
-              <!--
-              <do_if value="[class.ship_l,class.ship_xl].indexof.{$oShip.class}">
-                <start_script name="'ufo.move.capital.follow.any'" object="$oShip.pilot">
-                  <param name="oTarget" value="player.primaryship" />
-                  <param name="sFollowMode" value="'aggressive'" />
-                  <param name="mEngageDist" value="5.5km" />
-                  <param name="mCapShipOffset" value="3.5km" />
-                  <param name="iDebugLevel" value="3" />
-                </start_script>
-                <start_script name="'ufo.fight.capital.defend'" object="$oShip.defencenpc">
-                  <param name="sStance" value="'aggressive'" />
-                  <param name="mEngageDist" value="5.5km" />
-                  <param name="mCapShipOffset" value="3.5km" />
-                  <param name="iDebugLevel" value="0" />
-                </start_script>
-              </do_if>
-              <do_else>
-                <start_script name="'ufo.move.fighter.follow.fighter'" object="$oShip.pilot">
-                  <param name="oTarget" value="$oLeader" />
-                  <param name="eFormation" value="formationshape.pointguard" />
-                  <param name="oFormationparam" value="$oLeader.size * 10" />
-                  <param name="bEscort" value="true" />
-                  <param name="sEscortMode" value="'aggressive'" />
-                  <param name="iDebugLevel" value="3" />
-                </start_script>
-              </do_else>
-              -->
-            </do_all>
-
-            <!--
-            <start_script name="'ufo.move.fighter.follow.fighter'" object="$oLeader.pilot">
-              <param name="oTarget" value="player.primaryship" />
-              <param name="eFormation" value="formationshape.pointguard"/>
-              <param name="oFormationparam" value="player.primaryship.size * 4"/>
-              <param name="bEscort" value="false"/>
-              <param name="sEscortMode" value="'passive'"/>
-              <param name="iDebugLevel" value="3" />
-            </start_script>
-            -->
-            <reset_cue cue="UFO_Test_SpawnCapital" />
-          </actions>
-        </cue>
-      </cues>
+        <do_all exact="$ships.count" counter="$i">
+          <set_value name="$oShip" exact="$ships.{$i}" />
+          <start_script name="'move.seekenemies'" object="$oShip.pilot">
+            <param name="destination" value="player.primaryship" />
+            <param name="pos" value="$pos"/>
+            <param name="debugoutputchance" value="0" />
+          </start_script>
+        </do_all>
+      </actions>
     </cue>
-
-    <cue name="UFO_Test_SpawnEnemy">
-      <conditions>
-        <check_any>
-          <event_conversation_next_section section="gUFO_Test_SpawnEnemy" />
-          <event_conversation_returned_to_section section="gUFO_Test_SpawnEnemy" />
-        </check_any>
-      </conditions>
-      <cues>
-        <cue name="UFO_Test_SpawnEnemyShips" ref="md.LIB_Create_Ships.Start">
-          <param name="EndSignalCue" value="UFO_Test_EnemyAttack"/>
-          <param name="GroupCue" value="UFO_Test_SpawnEnemy" />
-          <param name="ClearGroup" value="true" />
-
-          <!--Ship Info-->
-          <param name="Ship_Amount" value="10" />
-          <param name="Ship_Faction" value="faction.xenon" />
-
-          <param name="Ship_Ref" value="null" />
-          <param name="Ship_Macro" value="null" />
-
-          <param name="Ship_CategoryFaction" value="null" />
-          <param name="Ship_Category_Size" value="class.ship_s" />
-          <param name="Ship_CategoryTags" value="null" />
-
-          <!--Location Info-->
-          <param name="Zone" value="player.zone"/>
-          <param name="PositionObject" value="player.primaryship" />
-          <param name="Position" value="position.[0,0,10km]"/>
-          <param name="SafePos" value="true"/>
-          <param name="MinRange" value="500m"/>
-          <param name="MaxRange" value="1km"/>
-
-          <param name="Dock" value="null" />
-
-          <param name="FindBetterLocation" value="false" />
-
-          <!--NPC Info-->
-          <!--If Ship_Faction is set, all NPCs will have their owner set to that faction-->
-          <param name="Pilot_DoCreate" value="true" />
-          <param name="Pilot_Essential" value="true" />
-
-          <param name="DefenceNPC_DoCreate" value="true" />
-          <param name="Engineer_DoCreate" value="true" />
-
-          <param name="DebugChance" value="100"/>
-        </cue>
-        <cue name="UFO_Test_EnemyAttack">
-          <conditions>
-            <event_cue_signalled />
-          </conditions>
-          <delay exact="5s" />
-          <actions>
-            <set_value name="$ships" exact="@$LIB_Create_Ships_Result" />
-            <do_if value="not @$ships.count">
-              <set_value name="$ships" exact="[]" />
-            </do_if>
-            <debug_text text="'Spawned %1 ships for enemy.'.[$ships.count]" filter="error" />
-
-            <create_position name="$pos" object="player.primaryship" />
-
-            <do_all exact="$ships.count" counter="$i">
-              <set_value name="$oShip" exact="$ships.{$i}" />
-              <start_script name="'move.seekenemies'" object="$oShip.pilot">
-                <param name="destination" value="player.primaryship" />
-                <param name="pos" value="$pos"/>
-                <param name="debugoutputchance" value="100" />
-              </start_script>
-            </do_all>
-
-            <reset_cue cue="UFO_Test_SpawnEnemy" />
-          </actions>
-        </cue>
-      </cues>
-    </cue>
-
-    <cue name="UFO_Test_SpawnEnemyCapital">
-      <conditions>
-        <check_any>
-          <event_conversation_next_section section="gUFO_Test_SpawnEnemyCapital" />
-          <event_conversation_returned_to_section section="gUFO_Test_SpawnEnemyCapital" />
-        </check_any>
-      </conditions>
-      <cues>
-        <cue name="UFO_Test_SpawnEnemyCapitalShips" ref="md.LIB_Create_Ships.Start">
-          <param name="EndSignalCue" value="UFO_Test_EnemyCapitalAttack"/>
-          <param name="GroupCue" value="UFO_Test_SpawnEnemyCapital" />
-          <param name="ClearGroup" value="true" />
-
-          <!--Ship Info-->
-          <param name="Ship_Amount" value="2" />
-          <param name="Ship_Faction" value="faction.xenon" />
-
-          <param name="Ship_Ref" value="null" />
-          <param name="Ship_Macro" value="null" />
-
-          <param name="Ship_CategoryFaction" value="null" />
-          <param name="Ship_Category_Size" value="class.ship_xl" />
-          <param name="Ship_CategoryTags" value="null" />
-
-          <!--Location Info-->
-          <param name="Zone" value="player.zone"/>
-          <param name="PositionObject" value="player.primaryship" />
-          <param name="Position" value="position.[0,0,10km]"/>
-          <param name="SafePos" value="true"/>
-          <param name="MinRange" value="500m"/>
-          <param name="MaxRange" value="1km"/>
-
-          <param name="Dock" value="null" />
-
-          <param name="FindBetterLocation" value="false" />
-
-          <!--NPC Info-->
-          <!--If Ship_Faction is set, all NPCs will have their owner set to that faction-->
-          <param name="Pilot_DoCreate" value="true" />
-          <param name="Pilot_Essential" value="true" />
-
-          <param name="DefenceNPC_DoCreate" value="true" />
-          <param name="Engineer_DoCreate" value="true" />
-
-          <param name="DebugChance" value="100"/>
-        </cue>
-        <cue name="UFO_Test_EnemyCapitalAttack">
-          <conditions>
-            <event_cue_signalled />
-          </conditions>
-          <delay exact="5s" />
-          <actions>
-            <set_value name="$ships" exact="@$LIB_Create_Ships_Result" />
-            <do_if value="not @$ships.count">
-              <set_value name="$ships" exact="[]" />
-            </do_if>
-            <debug_text text="'Spawned %1 ships for enemy.'.[$ships.count]" filter="error" />
-
-            <create_position name="$pos" object="player.primaryship" />
-
-            <do_all exact="$ships.count" counter="$i">
-              <set_value name="$oShip" exact="$ships.{$i}" />
-              <start_script name="'move.seekenemies'" object="$oShip.pilot">
-                <param name="destination" value="player.primaryship" />
-                <param name="pos" value="$pos"/>
-                <param name="debugoutputchance" value="100" />
-              </start_script>
-            </do_all>
-
-            <reset_cue cue="UFO_Test_SpawnEnemyCapital" />
-          </actions>
-        </cue>
-      </cues>
-    </cue>
-
+    
     <cue name="UFO_Test_SpawnEnemyStation" instantiate="true">
       <conditions>
         <check_any>
@@ -500,48 +246,6 @@
         </create_station>
 
         <set_known object="$oStation" known="true" />
-
-        <set_value name="$mEngageDist" exact="4km" />
-        <set_value name="$mCapShipOffset" exact="3.5km" />
-
-        <!-- Check if there are any enemies to engage -->
-        <find_gravidar_contact groupname="$gEnemies" object="player.primaryship" functional="true" multiple="true">
-          <match_any>
-            <match>
-              <match_any>
-                <match class="class.ship_xs" />
-                <match class="class.ship_s" />
-                <match class="class.ship_m" />
-              </match_any>
-              <match_any>
-                <match_distance object="player.primaryship" max="$mEngageDist" />
-              </match_any>
-            </match>
-            <!-- We need special handling for capital ships, since those are very big and therefore distances are off -->
-            <match>
-              <match_any>
-                <match class="class.ship_l" />
-                <match class="class.ship_xl" />
-                <match class="class.station" />
-              </match_any>
-              <match_any>
-                <match_distance object="player.primaryship" max="$mEngageDist + $mCapShipOffset" />
-              </match_any>
-            </match>
-          </match_any>
-          <match_any>
-            <match_relation object="player.primaryship" relation="enemy" comparison="le"/>
-          </match_any>
-        </find_gravidar_contact>
-
-        <set_value name="$iStationCount" exact="0" />
-
-        <do_all exact="$gEnemies.count" counter="$i">
-          <set_value name="$iStationCount" operation="add" chance="$gEnemies.{$i}.isclass.{class.station} * 100" />
-          <debug_text filter="error" text="'%1 (%2)'.[$gEnemies.{$i}.knownname,$gEnemies.{$i}.class]" />
-        </do_all>
-
-        <show_help force="true" custom="'Found %1 enemies. Of these %2 are stations.'.[$gEnemies.count,$iStationCount]"/>
       </actions>
     </cue>
   </cues>

@@ -1,5 +1,5 @@
 ﻿[color=green]Ladies and Gents,
 
-I have just released LibMJ V0.0.1.
+I have just released LibMJ V0.1.0 which adds a mechanism to add menu items to the sidebar (compatible with SidebarExtender).
 
 Hafe vun![/color]

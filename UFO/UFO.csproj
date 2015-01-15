@@ -56,7 +56,6 @@
     <None Include="Extension\ui\addons\ego_mainmenu\sources\ufo_menu_sidebar.lua" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Extension\aiscripts\fight.attack.object.drone.leader.xml" />
     <Content Include="Extension\aiscripts\ufo.capital.captain.combat.xml" />
     <Content Include="Extension\aiscripts\ufo.capital.captain.main.xml">
       <SubType>Designer</SubType>
@@ -74,7 +73,9 @@
     <Content Include="Extension\aiscripts\ufo.lib.fleet.reporting.initialize.xml" />
     <Content Include="Extension\aiscripts\ufo.lib.fleet.reporting.scan.xml" />
     <Content Include="Extension\aiscripts\ufo.move.capital.attack.zone.xml" />
-    <Content Include="Extension\aiscripts\ufo.start.xml" />
+    <Content Include="Extension\aiscripts\ufo.start.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Extension\content.xml" />
     <Content Include="Extension\md\UFO.xml" />
     <Content Include="Extension\md\UFO_Management.xml">

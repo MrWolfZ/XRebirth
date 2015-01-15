@@ -4,10 +4,10 @@
 	Author: MadJoker
   
 	Last Change:
-	Version: V0.5.0 Beta
-	Date: 1st May 2014
+	Version: V0.6.0 Beta
+	Date: 17th January 2015
   
-	X Rebirth version: 1.31
+	X Rebirth version: 3.10
 --]]
 
 -- global UFO info container

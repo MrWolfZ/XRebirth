@@ -1,8 +1,8 @@
 ﻿Author: MadJoker 
-Version: V0.0.1
-Date: 1st May 2014
+Version: V0.1.0
+Date: 17th January 2015
 
-X Rebirth version: 1.31
+X Rebirth version: 3.10
 
 http://www.nexusmods.com/xrebirth/mods/385/
 http://steamcommunity.com/sharedfiles/filedetails/?id=255150121
@@ -18,7 +18,9 @@ This library contains:
 - A generic installation and version control MD script. See the LibMJ.xml file for an example of 
   how the generic script is used by the LibMJ initialization script itself.
 
-- A generic radial menu generator. Usage details will be provided at a later point.
+- A generic radial menu generator.
+
+- A mechanism to add menu items to the sidebar (compatible with SidebarExtender).
 
 - A way to create dictionaries/associative arrays to be used in scripts:
 

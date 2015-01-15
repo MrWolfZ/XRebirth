@@ -1,4 +1,4 @@
-﻿[b]X:Rebirth Version:[/b] 1.31 
+﻿[b]X:Rebirth Version:[/b] 3.10
 
 [size=4][b][color=cyan]=== About ===[/color][/b][/size]
 
@@ -10,7 +10,7 @@ This mod is a [b][i][color=orange]complete rewrite from scratch[/color][/i][/b] 
 
 [size=4][b][color=cyan]=== Details ===[/color][/b][/size]
 
-This mod adds a fleet management UI to the game, accessible via the Radial Menu -> 3-Universe -> 4 Fleet Management.
+This mod adds a fleet management UI to the game, accessible via the Sidebar (in the INFO section).
 
 The most basic functionality of this mod is to just assign some ships to the 'Player Fleet' and they will follow you and engage enemies based on the selected stances (see below). The ships will then not be part of your squad in terms of that game mechanic, so you won't see "In my squad" on the property monitor. But it will still behave correctly.
 
@@ -125,6 +125,9 @@ Disabled in-zone boosting since it caused issues for many player
 - [2014-05-01 - V0.5.0 Beta]
 Major rewrite of almost everything in the mod
 Added Fleet Management UI
+- [2015-01-17 - V0.6.0 Beta]
+Compatibility with X:Rebirth 3.10
+Made Fleet Management UI accessible via the sidebar
 
 [size=4][b][color=cyan]=== Future Plans ===[/color][/b][/size]
 

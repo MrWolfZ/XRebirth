@@ -1,5 +1,5 @@
 ﻿[color=green]Ladies and Gents,
 
-I have just released UFO V0.5.0, which features a brand-new fleet management UI and fixes many bugs (e.g. no more sliding ships!).
+I have just released UFO V0.6.0, which features compatibility with X:Rebirth 3.10 by making the Fleet Management UI accessible via the sidebar (in the INFO section).
 
 Hafe vun![/color] 
