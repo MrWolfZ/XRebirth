@@ -67,8 +67,8 @@
     <Content Include="Extension\t\0001-L049.xml" />
     <Content Include="Extension\t\0001-L086.xml" />
     <Content Include="Extension\t\0001-L088.xml" />
-    <Content Include="Extension\ui\addons\ego_detailmonitor\ego_detailmonitor.xml" />
-    <Content Include="Extension\ui\addons\ego_mainmenu\ego_mainmenu.xml" />
+    <Content Include="Extension\ui\addons\ego_detailmonitor\ui.xml" />
+    <Content Include="Extension\ui\addons\ego_mainmenu\ui.xml" />
     <Content Include="Publish\Forums.txt" />
     <Content Include="Publish\Images\logo-base.png" />
     <Content Include="Publish\Images\logo-square.png" />

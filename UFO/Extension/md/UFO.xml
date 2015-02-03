@@ -5,10 +5,10 @@
 	Author: MadJoker
   
 	Last Change:
-	Version: V0.6.0 Beta
-	Date: 17th January 2015
+	Version: V0.6.1 Beta
+	Date: 3rd February 2015
   
-	X Rebirth version: 3.10
+	X Rebirth version: 3.20
 -->
 
 <!--	
@@ -70,7 +70,7 @@
         <!-- LibMJ version number -->
         <set_value name="$iMajorVersion" exact="0" />
         <set_value name="$iMinorVersion" exact="6" />
-        <set_value name="$iBugfixVersion" exact="0" />
+        <set_value name="$iBugfixVersion" exact="1" />
 
         <set_value name="$sInstallMessage" exact="{99998,9999}" />
         <set_value name="$sUpgradeMessage" exact="{99998,9998}" />

@@ -44,7 +44,7 @@
   <ItemGroup>
     <Content Include="Extension\content.xml" />
     <Content Include="Extension\md\UFO_Test.xml" />
-    <Content Include="Extension\ui\addons\ego_mainmenu\ego_mainmenu.xml" />
+    <Content Include="Extension\ui\addons\ego_mainmenu\ui.xml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

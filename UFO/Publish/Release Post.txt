@@ -1,5 +1,5 @@
 ﻿[color=green]Ladies and Gents,
 
-I have just released UFO V0.6.0, which features compatibility with X:Rebirth 3.10 by making the Fleet Management UI accessible via the sidebar (in the INFO section).
+I have just released UFO V0.6.1, which features compatibility with X:Rebirth 3.20.
 
 Hafe vun![/color] 

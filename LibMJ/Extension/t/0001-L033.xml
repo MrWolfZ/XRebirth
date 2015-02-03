@@ -5,10 +5,10 @@
 	Author: MadJoker
   
   Last Change:
-	Version: V0.1.0
-	Date: 17th January 2015
+	Version: V0.1.1
+	Date: 3rd February 2015
   
-  X Rebirth version: 3.10
+  X Rebirth version: 3.20
 -->
 <diff xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="rfc5261.xsd">
   <add sel="/language[@id='33']">

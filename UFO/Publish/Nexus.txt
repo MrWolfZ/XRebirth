@@ -1,4 +1,4 @@
-﻿[b]X:Rebirth Version:[/b] 3.10
+﻿[b]X:Rebirth Version:[/b] 3.20
 
 [size=4][b][color=cyan]=== About ===[/color][/b][/size]
 
@@ -79,7 +79,7 @@ For texts I am using page 99998.
 
 [size=4][b][color=cyan]=== Release history ===[/color][/b][/size]
 
-- [2013-11-28 - V0.1.0 Experimental] 
+- [2013-11-28 - V0.1.1 Experimental] 
 Initial Release 
 - [2013-11-28 - V0.2.0 Experimental] 
 Fixed issue where defence officer scripts wouldn't properly start on load
@@ -128,6 +128,8 @@ Added Fleet Management UI
 - [2015-01-17 - V0.6.0 Beta]
 Compatibility with X:Rebirth 3.10
 Made Fleet Management UI accessible via the sidebar
+- [2015-02-03 - V0.6.1 Beta]
+Compatibility with X:Rebirth 3.20
 
 [size=4][b][color=cyan]=== Future Plans ===[/color][/b][/size]
 

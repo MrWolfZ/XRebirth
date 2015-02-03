@@ -1,8 +1,8 @@
 Author: MadJoker 
-Version: V0.6.0 Beta
-Date: 17th January 2015
+Version: V0.6.1 Beta
+Date: 3rd February 2015
 
-X Rebirth version: 3.10
+X Rebirth version: 3.20
 
 http://steamcommunity.com/sharedfiles/filedetails/?id=247004923
 http://xrebirth.nexusmods.com/mods/278/
@@ -109,7 +109,7 @@ For texts I am using page 99998.
 
 === Release history ===
 
- - [2013-11-28 - V0.1.0 Experimental] 
+ - [2013-11-28 - V0.1.1 Experimental] 
 	Initial Release 
  - [2013-11-28 - V0.2.0 Experimental] 
 	Fixed issue where defence officer scripts wouldn't properly start on load
@@ -155,6 +155,11 @@ For texts I am using page 99998.
  - [2014-05-01 - V0.5.0 Beta]
 	Major rewrite of almost everything in the mod
 	Added Fleet Management UI
+ - [2015-01-17 - V0.6.0 Beta]
+    Compatibility with X:Rebirth 3.10
+    Made Fleet Management UI accessible via the sidebar
+ - [2015-02-03 - V0.6.1 Beta]
+    Compatibility with X:Rebirth 3.20
 
 === Future Plans ===
 

@@ -1,8 +1,8 @@
 ﻿[b]Author:[/b] MadJoker 
-[b]Version:[/b] V0.5.0 Beta
-[b]Date:[/b] 17th January 2015
+[b]Version:[/b] V0.6.1 Beta
+[b]Date:[/b] 3rd February 2015
 
-[b]X:Rebirth Version:[/b] 3.10
+[b]X:Rebirth Version:[/b] 3.20
 
 [b]About[/b]
 

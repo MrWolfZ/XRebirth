@@ -56,14 +56,18 @@
     <None Include="Extension\ui\addons\ego_mainmenu\sources\ufo_menu_sidebar.lua" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Extension\aiscripts\ufo.capital.captain.combat.xml" />
+    <Content Include="Extension\aiscripts\ufo.capital.captain.combat.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Extension\aiscripts\ufo.capital.captain.main.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Extension\aiscripts\ufo.capital.commander.main.xml" />
     <Content Include="Extension\aiscripts\ufo.capital.commander.move.to.zone.xml" />
     <Content Include="Extension\aiscripts\ufo.capital.defence.fire.xml" />
-    <Content Include="Extension\aiscripts\ufo.capital.defence.main.xml" />
+    <Content Include="Extension\aiscripts\ufo.capital.defence.main.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Extension\aiscripts\ufo.fighter.commander.main.xml" />
     <Content Include="Extension\aiscripts\ufo.fighter.pilot.combat.xml" />
     <Content Include="Extension\aiscripts\ufo.fighter.pilot.main.xml" />
@@ -91,8 +95,8 @@
     <Content Include="Extension\t\0001-L049.xml" />
     <Content Include="Extension\t\0001-L086.xml" />
     <Content Include="Extension\t\0001-L088.xml" />
-    <Content Include="Extension\ui\addons\ego_detailmonitor\ego_detailmonitor.xml" />
-    <Content Include="Extension\ui\addons\ego_mainmenu\ego_mainmenu.xml" />
+    <Content Include="Extension\ui\addons\ego_detailmonitor\ui.xml" />
+    <Content Include="Extension\ui\addons\ego_mainmenu\ui.xml" />
     <Content Include="Publish\Forums.txt" />
     <Content Include="Publish\Images\logo-base.png" />
     <Content Include="Publish\Images\logo-square-base.png" />
@@ -101,6 +105,7 @@
     <Content Include="Publish\Images\ui-1.png" />
     <Content Include="Publish\Images\ui-2.png" />
     <Content Include="Publish\Images\ui-3.png" />
+    <Content Include="Publish\Images\ui-4.png" />
     <Content Include="Publish\Misc Notes.txt" />
     <Content Include="Publish\Nexus.txt" />
     <Content Include="Publish\Release Post.txt" />

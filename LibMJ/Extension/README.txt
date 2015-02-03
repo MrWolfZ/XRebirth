@@ -1,8 +1,8 @@
 ﻿Author: MadJoker 
-Version: V0.1.0
-Date: 17th January 2015
+Version: V0.1.1
+Date: 3rd February 2015
 
-X Rebirth version: 3.10
+X Rebirth version: 3.20
 
 http://www.nexusmods.com/xrebirth/mods/385/
 http://steamcommunity.com/sharedfiles/filedetails/?id=255150121
@@ -77,6 +77,11 @@ For texts I am using page 99997.
 
  - [2014-05-01 - V0.0.1] 
 	Initial Release 
+ - [2015-01-17 - V0.1.0] 
+    Compatibility with X:Rebirth 3.10
+    New mechanism for adding items to the sidebar 
+ - [2015-02-03 - V0.1.1] 
+    Compatibility with X:Rebirth 3.20
 
 === Future Plans ===
 

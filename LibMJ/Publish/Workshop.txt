@@ -1,8 +1,8 @@
 ﻿[b]Author:[/b] MadJoker
-[b]Version:[/b] V0.1.0
-[b]Date:[/b] 17th January 2015
+[b]Version:[/b] V0.1.1
+[b]Date:[/b] 3rd February 2015
 
-[b]X:Rebirth Version:[/b] 3.10
+[b]X:Rebirth Version:[/b] 3.20
 
 [b]About[/b]
 
@@ -57,6 +57,8 @@ Initial Release
 [*] [b][2015-01-17 - V0.1.0][/b]
 Compatibility with X:Rebirth 3.10
 New mechanism for adding items to the sidebar 
+[*] [b][2015-02-03 - V0.1.1][/b]
+Compatibility with X:Rebirth 3.20
 [/list]
 [b]Future Plans[/b]
 [list]
